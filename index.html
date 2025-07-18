@@ -1,1 +1,136 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Stoppelrennen Dobberzin – Live</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --green:#C6EFCE;--greenText:#006100;
+            --red:#FFC7CE;  --redText:#9C0006;
+            --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;background:#f7f7f7;font-family:Roboto,Arial,sans-serif;color:#111}
+        header{background:#183028;color:#fff;text-align:center;padding:8px 16px;position:sticky;top:0;z-index:10}
+        header img{height:48px;vertical-align:middle}
+        #sponsors{overflow:hidden;border-top:2px solid #eee;border-bottom:2px solid #eee;background:#fff}
+        #sponsors .wrap{white-space:nowrap;display:inline-block;animation:scroll 25s linear infinite}
+        #sponsors .item{display:inline-block;padding:8px 24px}
+        #sponsors img{height:36px;vertical-align:middle;max-width:140px}
+        @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
+        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
+        nav button.active{background:#183028;color:#fff;border-color:#183028}
+        .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
+        .section.active{display:block}
+        .tableWrap{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;margin-top:8px;font-size:clamp(14px,2.5vw,16px)}
+        thead th{background:#e0e0e0;position:sticky;top:74px}
+        tbody tr:nth-child(even){background:#fafafa}
+        td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
+        .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.85em}
+        .badge.q{background:var(--green);color:var(--greenText)}
+        .badge.out{background:var(--red);color:var(--redText)}
+        .badge.gold{background:var(--gold)}
+        .badge.silver{background:var(--silver)}
+        .badge.bronze{background:var(--bronze)}
+        .badge.final{background:var(--final)}
+        .updated{text-align:center;font-size:12px;color:#666;margin-top:4px}
+    </style>
+</head>
+<body>
+<header><img src="MAIN_LOGO.png" alt="Logo"> Live-Ergebnisse</header>
 
+<div id="sponsors"><div class="wrap" id="sponsorWrap"></div></div>
+
+<nav id="tabs">
+    <button data-tab="leaderboard" class="active">Leaderboard</button>
+    <button data-tab="viertel">Viertelfinale</button>
+    <button data-tab="halb">Halbfinale</button>
+    <button data-tab="finale">Finale</button>
+</nav>
+
+<div id="leaderboard" class="section active"><div class="tableWrap"><table id="tbl-leader"></table></div><div class="updated" id="upd-leader"></div></div>
+<div id="viertel"     class="section"><div class="tableWrap"><table id="tbl-vf"></table></div><div class="updated" id="upd-vf"></div></div>
+<div id="halb"        class="section"><div class="tableWrap"><table id="tbl-hf"></table></div><div class="updated" id="upd-hf"></div></div>
+<div id="finale"      class="section"><div class="tableWrap"><table id="tbl-fin"></table></div><div class="updated" id="upd-fin"></div></div>
+
+<script>
+  const CONFIG={
+    api:'https://script.google.com/macros/s/AKfycbypplFztSPWzBRmUBGUc5fkHPSttGxr4lIPLtzuPySwKfW859c4jX6kYBG5ti_ygbJBeg/exec', // <-- Apps Script URL
+    refresh:30000,
+    sponsors:[
+      {name:'Sponsor A',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'Sponsor B',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'Sponsor C',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+    ]
+  };
+
+  /* ------------ UTIL ------------- */
+  function badgeQual(v){return v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';}
+  function badgePlace(p){
+    const n=+p;
+    if(n===1) return '<span class="badge gold">1</span>';
+    if(n===2) return '<span class="badge silver">2</span>';
+    if(n===3) return '<span class="badge bronze">3</span>';
+    if(n)     return `<span class="badge final">${n}</span>`;
+    return '';
+  }
+  /* ------------ RENDERERS ------------- */
+  function renderLeaderboard(rows){
+    const tbl=document.getElementById('tbl-leader');
+    let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th><th>Punkte</th></tr></thead><tbody>';
+    rows.slice(1).forEach(r=>{
+      html+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+    });
+    tbl.innerHTML=html+'</tbody>';
+  }
+  function renderPhase(rows,id){
+    const tbl=document.getElementById(id);
+    let html='<thead><tr><th>Rennen</th><th>Startnr</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead><tbody>';
+    rows.slice(1).forEach(r=>{
+      html+=`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQual(r[5])}</td></tr>`;
+    });
+    tbl.innerHTML=html+'</tbody>';
+  }
+  function renderFinale(rows){
+    const tbl=document.getElementById('tbl-fin');
+    let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th></tr></thead><tbody>';
+    rows.slice(1).forEach(r=>{
+      html+=`<tr><td>${badgePlace(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+    });
+    tbl.innerHTML=html+'</tbody>';
+  }
+  function renderSponsors(arr){
+    const wrap=document.getElementById('sponsorWrap');
+    if(!arr.length){wrap.innerHTML='';return;}
+    const row=arr.map(s=>`<span class="item"><a href="${s.link}" target="_blank"><img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
+    wrap.innerHTML=row+row; // verdoppeln für Endlos-Scroll
+  }
+
+  /* ------------ DATA LOAD ------------- */
+  async function loadAll(){
+    try{
+      const data=await (await fetch(CONFIG.api+'?ts='+Date.now())).json();
+      renderLeaderboard(data.leaderboard);
+      renderPhase(data.viertel,'tbl-vf');
+      renderPhase(data.halb   ,'tbl-hf');
+      renderFinale(data.finale);
+      renderSponsors(CONFIG.sponsors);
+      const t=new Date().toLocaleTimeString();
+      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+t);
+    }catch(e){console.error(e);}
+  }
+  loadAll(); setInterval(loadAll,CONFIG.refresh);
+
+  /* ------------ Tabs ------------- */
+  document.querySelectorAll('#tabs button').forEach(btn=>{
+    btn.onclick=()=>{document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      document.getElementById(btn.dataset.tab).classList.add('active');};
+  });
+</script>
+</body>
+</html>
