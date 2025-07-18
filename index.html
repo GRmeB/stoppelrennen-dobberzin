@@ -13,43 +13,41 @@
             --red:#FFC7CE;   --redText:#9C0006;
             --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183;
             --final:#E2F0D9;
-            --stickyTop:122px;                 /* Höhe Header + Sponsor (mobile) */
+            --stickyTop:80px;                 /* wird per JS gleich korrigiert */
         }
-        @media (min-width:600px){ :root{--stickyTop:74px;} }  /* Desktop */
 
         *{box-sizing:border-box}
         body{margin:0;background:#f7f7f7;font:400 16px/1.4 Roboto,Arial,sans-serif;color:#111}
 
+        /* ---------- Header ---------- */
         header{background:#183028;color:#fff;text-align:center;
             padding:8px 16px;position:sticky;top:0;z-index:10}
         header img{height:48px;margin-right:8px;vertical-align:middle}
 
-        /* Sponsorband -------------------------------------------------------- */
+        /* ---------- Sponsor-Ticker ---------- */
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
-        #sponsors .wrap{display:flex;gap:64px;animation:scroll 25s linear infinite}
-        #sponsors .item{display:inline-block;padding:8px 0}
+        #sponsors .track{display:flex;gap:64px;animation:ticker 25s linear infinite}
+        @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
-        @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-        /* Tabs --------------------------------------------------------------- */
+        /* ---------- Tabs ---------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
-        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;
-            font-weight:700;cursor:pointer}
+        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
 
-        /* Section + Tabelle -------------------------------------------------- */
+        /* ---------- Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
+
         table{width:100%;border-collapse:collapse;margin-top:8px;
             font-size:clamp(14px,2.5vw,16px)}
         thead th{background:#e0e0e0;position:sticky;top:var(--stickyTop)}
         tbody tr:nth-child(even){background:#fafafa}
         td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
 
-        /* Badges ------------------------------------------------------------- */
-        .badge{display:inline-block;padding:2px 6px;border-radius:4px;
-            font-weight:700;font-size:.85em}
+        /* ---------- Badges ---------- */
+        .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.85em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
         .badge.gold{background:var(--gold)}
@@ -62,6 +60,20 @@
 </head>
 
 <body>
+
+<!-- ---------- Sticky-Offset JavaScript (muss VOR dem Header stehen) -->
+<script>
+  (function fixSticky(){
+    function apply(){
+      const top = document.querySelector('header').offsetHeight +
+        document.getElementById('sponsors').offsetHeight;
+      document.documentElement.style.setProperty('--stickyTop', top + 'px');
+    }
+    window.addEventListener('load', apply);
+    window.addEventListener('resize', apply);
+  })();
+</script>
+
 <!-- ---------- HEADER ------------ -->
 <header>
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
@@ -69,7 +81,7 @@
 </header>
 
 <!-- ---------- SPONSOREN ---------- -->
-<div id="sponsors"><div class="wrap" id="sponsorWrap"></div></div>
+<div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
 
 <!-- ---------- TABS --------------- -->
 <nav id="tabs">
@@ -104,20 +116,19 @@
 <script>
   /* ------------------------------------------------------------------ */
   const CONFIG={
-    api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec', // <-- Apps Script URL
+    api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec',
     refresh:30000,
     sponsors:[
-      {name:'MGQ Solutions GmbH',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
-      {name:'Adidas',logo:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',link:'https://www.adidas.de'},
-      {name:'Nike',logo:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',link:'https://www.nike.de'},
+      {name:'MGQ Solutions',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'Adidas',logo:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',link:'https://adidas.de'},
+      {name:'Nike',logo:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',link:'https://nike.com'}
     ]
   };
 
   /* ---------- UTIL ---------- */
-  const badgeQual = v => v==='✓'
+  const badgeQual=v=>v==='✓'
     ?'<span class="badge q">✓</span>'
-    :v==='✗'
-      ?'<span class="badge out">✗</span>':'';
+    :v==='✗'?'<span class="badge out">✗</span>':'';
 
   function badgePlace(p){
     const n=+p;
@@ -153,36 +164,38 @@
     tbl.innerHTML=html+'</tbody>';
   }
   function renderSponsors(arr){
-    const wrap=document.getElementById('sponsorWrap');
-    wrap.innerHTML = arr.map(s=>
+    const track=document.getElementById('sponsorTrack');
+    const row  = arr.map(s=>
       `<span class="item"><a href="${s.link}" target="_blank">
-         <img src="${s.logo}" alt="${s.name}">
-       </a></span>`).join('');
+       <img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
+    track.innerHTML = row + row;          /* verdoppeln für Endlos-Loop */
   }
 
   /* ---------- DATA LOAD ---------- */
   async function loadAll(){
     try{
-      const res = await fetch(CONFIG.api + '?ts=' + Date.now());
+      const res  = await fetch(CONFIG.api+'?ts='+Date.now());
       const data = await res.json();
       renderLeaderboard(data.leaderboard);
-      renderPhase(data.viertel,'tbl-vf');
-      renderPhase(data.halb  ,'tbl-hf');
+      renderPhase(data.viertel ,'tbl-vf');
+      renderPhase(data.halb    ,'tbl-hf');
       renderFinale(data.finale);
       renderSponsors(CONFIG.sponsors);
-      const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
+      const t=new Date().toLocaleTimeString('de-DE',{hour12:false});
       ['leader','vf','hf','fin'].forEach(id=>{
-        document.getElementById('upd-'+id).textContent='Aktualisiert: '+ts;
+        document.getElementById('upd-'+id).textContent='Aktualisiert: '+t;
       });
     }catch(e){console.error('Daten konnten nicht geladen werden:',e);}
   }
   loadAll(); setInterval(loadAll,CONFIG.refresh);
 
-  /* ---------- TABS ---------- */
+  /* ---------- Tabs ---------- */
   document.querySelectorAll('#tabs button').forEach(btn=>{
     btn.onclick=()=>{
-      document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b===btn));
-      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
+      document.querySelectorAll('#tabs button')
+        .forEach(b=>b.classList.toggle('active',b===btn));
+      document.querySelectorAll('.section')
+        .forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
     };
   });
 </script>
