@@ -8,17 +8,18 @@
 
     <style>
         :root{
-            --green:#C6EFCE; --greenText:#006100;
-            --red:#FFC7CE;   --redText:#9C0006;
-            --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183; --final:#E2F0D9;
+            --green:#C6EFCE;--greenText:#006100;
+            --red:#FFC7CE;  --redText:#9C0006;
+            --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
+            --stickyTop:120px;               /* wird per JS überschrieben */
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.4 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        header{background:#183028;color:#fff;text-align:center;padding:8px 16px;position:sticky;top:0;z-index:5}
+        /* ---------- Masthead (Header + Sponsor) ---------- */
+        #masthead{position:sticky;top:0;z-index:10;background:#183028;}
+        header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
         header img{height:48px;margin-right:8px;vertical-align:middle}
-
-        /* ---------- Sponsor-Ticker ---------- */
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:scroll 25s linear infinite}
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
@@ -29,40 +30,32 @@
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
 
-        /* ---------- Tabellen-Layout ---------- */
+        /* ---------- Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
-
-        table{width:100%;border-collapse:collapse;margin-top:8px;
-            table-layout:fixed;font-size:clamp(14px,2.5vw,16px)}
-        col:nth-child(1){width:90px}           /* Platz | Rennen */
-        col:nth-child(2){width:140px}         /* Startnummer    */
-        col:nth-child(3){width:auto}          /* Fahrer (flex)  */
-        col:nth-child(4){width:130px}         /* Punkte / Quali */
-
-        thead th{background:#e0e0e0;font-weight:700;text-align:left}
+        table{width:100%;border-collapse:collapse;font-size:clamp(14px,2.5vw,16px)}
+        thead th{background:#e0e0e0;position:sticky;top:var(--stickyTop);text-align:left}
         td,th{padding:4px 8px;border-bottom:1px solid #ddd}
         tbody tr:nth-child(even){background:#fafafa}
-
         .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.8em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
-        .badge.gold{background:var(--gold)} .badge.silver{background:var(--silver)}
-        .badge.bronze{background:var(--bronze)} .badge.final{background:var(--final)}
-
+        .badge.gold{background:var(--gold)}.badge.silver{background:var(--silver)}
+        .badge.bronze{background:var(--bronze)}.badge.final{background:var(--final)}
         .updated{text-align:center;font-size:12px;color:#666;margin-top:4px}
     </style>
 </head>
 <body>
 
-<header>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
-    Stoppelrennen Dobberzin 2025 – Live-Ergebnisse
-</header>
+<!-- ---------- STICKY MASTHEAD ---------- -->
+<div id="masthead">
+    <header><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
+        Stoppelrennen Dobberzin 2025 – 4</header>
+    <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
+</div>
 
-<div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
-
+<!-- ---------- TABS ---------- -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Leaderboard</button>
     <button data-tab="vf">Viertelfinale</button>
@@ -70,96 +63,70 @@
     <button data-tab="fin">Finale</button>
 </nav>
 
-<!-- ---------- Leaderboard ---------- -->
-<div id="leader" class="section active">
-    <div class="tableWrap">
-        <table>
-            <colgroup><col><col><col><col></colgroup>
-            <thead><tr><th>Platz</th><th>Startnummer</th><th>Fahrer</th><th>Punkte</th></tr></thead>
-            <tbody id="tbl-leader"></tbody>
-        </table>
-    </div><div class="updated" id="upd-leader"></div>
-</div>
+<!-- ---------- TABELLEN ---------- -->
+<div id="leader" class="section active"><div class="tableWrap"><table>
+    <thead><tr><th>Platz</th><th>Startnummer</th><th>Fahrer</th><th>Punkte</th></tr></thead>
+    <tbody id="tbl-leader"></tbody></table></div><div class="updated" id="upd-leader"></div></div>
 
-<!-- ---------- Viertel / Halb ---------- -->
-<div id="vf" class="section">
-    <div class="tableWrap">
-        <table><colgroup><col><col><col><col></colgroup>
-            <thead><tr><th>Rennen</th><th>Startnummer</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead>
-            <tbody id="tbl-vf"></tbody>
-        </table>
-    </div><div class="updated" id="upd-vf"></div>
-</div>
+<div id="vf" class="section"><div class="tableWrap"><table>
+    <thead><tr><th>Rennen</th><th>Startnummer</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead>
+    <tbody id="tbl-vf"></tbody></table></div><div class="updated" id="upd-vf"></div></div>
 
-<div id="hf" class="section">
-    <div class="tableWrap">
-        <table><colgroup><col><col><col><col></colgroup>
-            <thead><tr><th>Rennen</th><th>Startnummer</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead>
-            <tbody id="tbl-hf"></tbody>
-        </table>
-    </div><div class="updated" id="upd-hf"></div>
-</div>
+<div id="hf" class="section"><div class="tableWrap"><table>
+    <thead><tr><th>Rennen</th><th>Startnummer</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead>
+    <tbody id="tbl-hf"></tbody></table></div><div class="updated" id="upd-hf"></div></div>
 
-<!-- ---------- Finale ---------- -->
-<div id="fin" class="section">
-    <div class="tableWrap">
-        <table><colgroup><col><col><col></colgroup>
-            <thead><tr><th>Platz</th><th>Startnummer</th><th>Fahrer</th></tr></thead>
-            <tbody id="tbl-fin"></tbody>
-        </table>
-    </div><div class="updated" id="upd-fin"></div>
-</div>
+<div id="fin" class="section"><div class="tableWrap"><table>
+    <thead><tr><th>Platz</th><th>Startnummer</th><th>Fahrer</th></tr></thead>
+    <tbody id="tbl-fin"></tbody></table></div><div class="updated" id="upd-fin"></div></div>
 
 <script>
   /* ---------- Config ---------- */
-  const cfg={
+  const CFG={
     api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec',
     refresh:30000,
     sponsors:[
-      {n:'MGQ',   l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
+      {n:'MGQ',l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
-      {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',                     href:'https://nike.com'}
+      {n:'Nike',l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',href:'https://nike.com'}
     ]
   };
 
-  const badgeQ = v => v==='✓' ?'<span class="badge q">✓</span>': v==='✗' ?'<span class="badge out">✗</span>':'';
-  const badgeP = p => ['','gold','silver','bronze'][p] ? `<span class="badge ${['','gold','silver','bronze'][p]}">${p}</span>` :
-    p ? `<span class="badge final">${p}</span>` : '';
+  /* ---------- Sticky-Offset messen ---------- */
+  new ResizeObserver(()=> {
+    const h=document.getElementById('masthead').offsetHeight;
+    document.documentElement.style.setProperty('--stickyTop',h+'px');
+  }).observe(document.getElementById('masthead'));
+
+  /* ---------- Sponsor-Ticker ---------- */
+  const track=document.getElementById('sponsorTrack');
+  track.innerHTML=CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
+
+  /* ---------- Badges ---------- */
+  const q=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
+  const p=x=>{const n=+x;return n===1?'<span class="badge gold">1</span>':n===2?'<span class="badge silver">2</span>':n===3?'<span class="badge bronze">3</span>':n?`<span class="badge final">${n}</span>`:'';};
 
   /* ---------- Render ---------- */
-  function tbody(id,rows){document.getElementById(id).innerHTML=rows.join('');}
-  function clean(arr){return arr.slice(1);} // Headerzeile im Sheet ignorieren
+  const tbody=(id,h)=>document.getElementById(id).innerHTML=h.join('');
+  const clean=r=>r.slice(1);
 
   async function load(){
-    const j = await (await fetch(cfg.api+'?t='+Date.now())).json();
-
-    tbody('tbl-leader',clean(j.leaderboard)
-      .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
-
-    const ph = r => `<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQ(r[5])}</td></tr>`;
-    tbody('tbl-vf',clean(j.viertel).map(ph));
-    tbody('tbl-hf',clean(j.halb).map(ph));
-
-    tbody('tbl-fin',clean(j.finale)
-      .map(r=>`<tr><td>${badgeP(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
-
+    const j=await (await fetch(CFG.api+'?v='+Date.now())).json();
+    tbody('tbl-leader',clean(j.leaderboard).map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
+    const rowPhase=r=>`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
+    tbody('tbl-vf',clean(j.viertel).map(rowPhase));
+    tbody('tbl-hf',clean(j.halb).map(rowPhase));
+    tbody('tbl-fin',clean(j.finale).map(r=>`<tr><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
     const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
     ['leader','vf','hf','fin'].forEach(i=>document.getElementById('upd-'+i).textContent='Aktualisiert: '+ts);
   }
-
-  /* ---------- Sponsors ---------- */
-  document.getElementById('sponsorTrack').innerHTML =
-    cfg.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
+  load(); setInterval(load,CFG.refresh);
 
   /* ---------- Tabs ---------- */
-  for(const b of document.querySelectorAll('#tabs button')){
+  document.querySelectorAll('#tabs button').forEach(b=>{
     b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
-      document.querySelectorAll('.section').forEach(sec=>sec.classList.toggle('active',sec.id===b.dataset.tab));};
-  }
-
-  /* ---------- Start ---------- */
-  load(); setInterval(load,cfg.refresh);
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));};
+  });
 </script>
-
 </body>
 </html>
