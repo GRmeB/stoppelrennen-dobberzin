@@ -2,49 +2,76 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title>Stoppelrennen Dobberzin – Live</title>
+    <title>Stoppelrennen Dobberzin 2025 – Live-Ergebnisse</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- ------------- STYLES ------------- -->
     <style>
         :root{
-            --green:#C6EFCE;--greenText:#006100;
-            --red:#FFC7CE;  --redText:#9C0006;
-            --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
+            --green:#C6EFCE; --greenText:#006100;
+            --red:#FFC7CE;   --redText:#9C0006;
+            --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183;
+            --final:#E2F0D9;
+            --stickyTop:122px;                 /* Höhe Header + Sponsor (mobile) */
         }
+        @media (min-width:600px){ :root{--stickyTop:74px;} }  /* Desktop */
+
         *{box-sizing:border-box}
-        body{margin:0;background:#f7f7f7;font-family:Roboto,Arial,sans-serif;color:#111}
-        header{background:#183028;color:#fff;text-align:center;padding:8px 16px;position:sticky;top:0;z-index:10}
-        header img{height:48px;vertical-align:middle}
-        #sponsors{overflow:hidden;border-top:2px solid #eee;border-bottom:2px solid #eee;background:#fff}
-        #sponsors .wrap{white-space:nowrap;display:inline-block;animation:scroll 25s linear infinite}
-        #sponsors .item{display:inline-block;padding:8px 24px}
-        #sponsors img{height:36px;vertical-align:middle;max-width:140px}
-        @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        body{margin:0;background:#f7f7f7;font:400 16px/1.4 Roboto,Arial,sans-serif;color:#111}
+
+        header{background:#183028;color:#fff;text-align:center;
+            padding:8px 16px;position:sticky;top:0;z-index:10}
+        header img{height:48px;margin-right:8px;vertical-align:middle}
+
+        /* Sponsorband -------------------------------------------------------- */
+        #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
+        #sponsors .wrap{display:flex;gap:64px;animation:scroll 25s linear infinite}
+        #sponsors .item{display:inline-block;padding:8px 0}
+        #sponsors img{height:36px;max-width:140px;vertical-align:middle}
+        @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+        /* Tabs --------------------------------------------------------------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
-        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
+        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;
+            font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
+
+        /* Section + Tabelle -------------------------------------------------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
-        table{width:100%;border-collapse:collapse;margin-top:8px;font-size:clamp(14px,2.5vw,16px)}
-        thead th{background:#e0e0e0;position:sticky;top:74px}
+        table{width:100%;border-collapse:collapse;margin-top:8px;
+            font-size:clamp(14px,2.5vw,16px)}
+        thead th{background:#e0e0e0;position:sticky;top:var(--stickyTop)}
         tbody tr:nth-child(even){background:#fafafa}
         td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
-        .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.85em}
+
+        /* Badges ------------------------------------------------------------- */
+        .badge{display:inline-block;padding:2px 6px;border-radius:4px;
+            font-weight:700;font-size:.85em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
         .badge.gold{background:var(--gold)}
         .badge.silver{background:var(--silver)}
         .badge.bronze{background:var(--bronze)}
         .badge.final{background:var(--final)}
+
         .updated{text-align:center;font-size:12px;color:#666;margin-top:4px}
     </style>
 </head>
-<body>
-<header><img src="MAIN_LOGO.png" alt="Logo"> Live-Ergebnisse</header>
 
+<body>
+<!-- ---------- HEADER ------------ -->
+<header>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
+    Stoppelrennen Dobberzin 2025 – Live-Ergebnisse
+</header>
+
+<!-- ---------- SPONSOREN ---------- -->
 <div id="sponsors"><div class="wrap" id="sponsorWrap"></div></div>
 
+<!-- ---------- TABS --------------- -->
 <nav id="tabs">
     <button data-tab="leaderboard" class="active">Leaderboard</button>
     <button data-tab="viertel">Viertelfinale</button>
@@ -52,33 +79,55 @@
     <button data-tab="finale">Finale</button>
 </nav>
 
-<div id="leaderboard" class="section active"><div class="tableWrap"><table id="tbl-leader"></table></div><div class="updated" id="upd-leader"></div></div>
-<div id="viertel"     class="section"><div class="tableWrap"><table id="tbl-vf"></table></div><div class="updated" id="upd-vf"></div></div>
-<div id="halb"        class="section"><div class="tableWrap"><table id="tbl-hf"></table></div><div class="updated" id="upd-hf"></div></div>
-<div id="finale"      class="section"><div class="tableWrap"><table id="tbl-fin"></table></div><div class="updated" id="upd-fin"></div></div>
+<!-- ---------- SECTIONS ----------- -->
+<div id="leaderboard" class="section active">
+    <div class="tableWrap"><table id="tbl-leader"></table></div>
+    <div class="updated" id="upd-leader"></div>
+</div>
 
+<div id="viertel" class="section">
+    <div class="tableWrap"><table id="tbl-vf"></table></div>
+    <div class="updated" id="upd-vf"></div>
+</div>
+
+<div id="halb" class="section">
+    <div class="tableWrap"><table id="tbl-hf"></table></div>
+    <div class="updated" id="upd-hf"></div>
+</div>
+
+<div id="finale" class="section">
+    <div class="tableWrap"><table id="tbl-fin"></table></div>
+    <div class="updated" id="upd-fin"></div>
+</div>
+
+<!-- ---------- SCRIPT ------------- -->
 <script>
+  /* ------------------------------------------------------------------ */
   const CONFIG={
     api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec', // <-- Apps Script URL
     refresh:30000,
     sponsors:[
-      {name:'Sponsor A',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
-      {name:'Sponsor B',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
-      {name:'Sponsor C',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'MGQ Solutions GmbH',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'Adidas',logo:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',link:'https://www.adidas.de'},
+      {name:'Nike',logo:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',link:'https://www.nike.de'},
     ]
   };
 
-  /* ------------ UTIL ------------- */
-  function badgeQual(v){return v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';}
+  /* ---------- UTIL ---------- */
+  const badgeQual = v => v==='✓'
+    ?'<span class="badge q">✓</span>'
+    :v==='✗'
+      ?'<span class="badge out">✗</span>':'';
+
   function badgePlace(p){
     const n=+p;
     if(n===1) return '<span class="badge gold">1</span>';
     if(n===2) return '<span class="badge silver">2</span>';
     if(n===3) return '<span class="badge bronze">3</span>';
-    if(n)     return `<span class="badge final">${n}</span>`;
-    return '';
+    return n ? `<span class="badge final">${n}</span>` : '';
   }
-  /* ------------ RENDERERS ------------- */
+
+  /* ---------- RENDER ---------- */
   function renderLeaderboard(rows){
     const tbl=document.getElementById('tbl-leader');
     let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th><th>Punkte</th></tr></thead><tbody>';
@@ -105,31 +154,36 @@
   }
   function renderSponsors(arr){
     const wrap=document.getElementById('sponsorWrap');
-    if(!arr.length){wrap.innerHTML='';return;}
-    const row=arr.map(s=>`<span class="item"><a href="${s.link}" target="_blank"><img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
-    wrap.innerHTML=row+row; // verdoppeln für Endlos-Scroll
+    wrap.innerHTML = arr.map(s=>
+      `<span class="item"><a href="${s.link}" target="_blank">
+         <img src="${s.logo}" alt="${s.name}">
+       </a></span>`).join('');
   }
 
-  /* ------------ DATA LOAD ------------- */
+  /* ---------- DATA LOAD ---------- */
   async function loadAll(){
     try{
-      const data=await (await fetch(CONFIG.api+'?ts='+Date.now())).json();
+      const res = await fetch(CONFIG.api + '?ts=' + Date.now());
+      const data = await res.json();
       renderLeaderboard(data.leaderboard);
       renderPhase(data.viertel,'tbl-vf');
-      renderPhase(data.halb   ,'tbl-hf');
+      renderPhase(data.halb  ,'tbl-hf');
       renderFinale(data.finale);
       renderSponsors(CONFIG.sponsors);
-      const t=new Date().toLocaleTimeString();
-      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+t);
-    }catch(e){console.error(e);}
+      const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
+      ['leader','vf','hf','fin'].forEach(id=>{
+        document.getElementById('upd-'+id).textContent='Aktualisiert: '+ts;
+      });
+    }catch(e){console.error('Daten konnten nicht geladen werden:',e);}
   }
   loadAll(); setInterval(loadAll,CONFIG.refresh);
 
-  /* ------------ Tabs ------------- */
+  /* ---------- TABS ---------- */
   document.querySelectorAll('#tabs button').forEach(btn=>{
-    btn.onclick=()=>{document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-      document.getElementById(btn.dataset.tab).classList.add('active');};
+    btn.onclick=()=>{
+      document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b===btn));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
+    };
   });
 </script>
 </body>
