@@ -6,35 +6,29 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- ------------------ STYLES ------------------ -->
     <style>
         :root{
             --green:#C6EFCE; --greenText:#006100;
             --red:#FFC7CE;   --redText:#9C0006;
             --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183; --final:#E2F0D9;
-            --sticky:72px;          /* Höhe Kopfbereich (mobile)             */
+            --sticky:72px;
         }
-        @media (min-width:600px){ :root{--sticky:74px;} }
-
+        @media (min-width:600px){:root{--sticky:74px}}
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.4 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        /* ---------- Header ----------- */
         header{background:#183028;color:#fff;text-align:center;padding:8px 16px;position:sticky;top:0;z-index:9}
         header img{height:48px;margin-right:8px;vertical-align:middle}
 
-        /* ---------- Sponsor-Ticker --- */
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:scroll 25s linear infinite}
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-        /* ---------- Tabs ------------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
 
-        /* ---------- Sektionen / Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
@@ -44,7 +38,6 @@
         td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
         tbody tr:nth-child(even){background:#fafafa}
 
-        /* ---------- Badges ----------- */
         .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.8em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
@@ -58,16 +51,13 @@
 </head>
 <body>
 
-<!-- ---------- HEADER ---------- -->
 <header>
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
-    Stoppelrennen Dobberzin 2025 – Live-Ergebnisse
+    Stoppelrennen Dobberzin 2025 - 3
 </header>
 
-<!-- ---------- SPONSOREN -------- -->
 <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
 
-<!-- ---------- TABS ------------- -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Leaderboard</button>
     <button data-tab="vf">Viertelfinale</button>
@@ -75,7 +65,7 @@
     <button data-tab="fin">Finale</button>
 </nav>
 
-<!-- ---------- LEADERBOARD ------ -->
+<!-- Leaderboard -->
 <div id="leader" class="section active">
     <div class="tableWrap">
         <table>
@@ -86,7 +76,7 @@
     <div class="updated" id="upd-leader"></div>
 </div>
 
-<!-- ---------- VIERTELFINALE ---- -->
+<!-- Viertelfinale -->
 <div id="vf" class="section">
     <div class="tableWrap">
         <table>
@@ -97,7 +87,7 @@
     <div class="updated" id="upd-vf"></div>
 </div>
 
-<!-- ---------- HALBFINALE ------- -->
+<!-- Halbfinale -->
 <div id="hf" class="section">
     <div class="tableWrap">
         <table>
@@ -108,7 +98,7 @@
     <div class="updated" id="upd-hf"></div>
 </div>
 
-<!-- ---------- FINALE (Platz | Startnummer | Fahrer) ----- -->
+<!-- Finale -->
 <div id="fin" class="section">
     <div class="tableWrap">
         <table>
@@ -119,69 +109,65 @@
     <div class="updated" id="upd-fin"></div>
 </div>
 
-<!-- ---------- SCRIPT ---------- -->
 <script>
-  /* ------ Konfiguration ------ */
   const CFG={
     api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec',
     refresh:30000,
     sponsors:[
       {n:'MGQ',  l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
-      {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
-      {n:'Nike', l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',href:'https://nike.com'}
+      {n:'Adidas', l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
+      {n:'Nike',   l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',href:'https://nike.com'}
     ]
   };
 
-  /* ------ Helfer ------ */
-  const qualBadge=v=>v==='✓'
+  /* ---- Helpers ---- */
+  const badgeQual=v=>v==='✓'
     ?'<span class="badge q">✓</span>'
-    :v==='✗'
-      ?'<span class="badge out">✗</span>':'';
-  const placeBadge=p=>{
+    :v==='✗'?'<span class="badge out">✗</span>':'';
+
+  const badgePlace=p=>{
     const n=+p;
     if(n===1)return'<span class="badge gold">1</span>';
     if(n===2)return'<span class="badge silver">2</span>';
     if(n===3)return'<span class="badge bronze">3</span>';
     return n?`<span class="badge final">${n}</span>`:'';
   };
-  const clean = rows => rows.slice(1).filter(r=>Number.isFinite(+r[0]));
 
-  /* ------ Rendering ------ */
-  const tbody=(id,rows)=>document.getElementById(id).innerHTML=rows.join('');
+  const tbody=(id,rows)=>{document.getElementById(id).innerHTML=rows.join('');};
 
-  function build(){
+  function fetchAndRender(){
     fetch(CFG.api+'?t='+Date.now()).then(r=>r.json()).then(d=>{
-      tbody('tbl-leader',clean(d.leaderboard)
+      /* Leaderboard */
+      tbody('tbl-leader', d.leaderboard.slice(1)
         .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
 
-      tbody('tbl-vf',clean(d.viertel)
-        .map(r=>`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${qualBadge(r[5])}</td></tr>`));
+      /* Viertel / Halb */
+      const phaseRow = r => `<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQual(r[5])}</td></tr>`;
+      tbody('tbl-vf', d.viertel.slice(1).map(phaseRow));
+      tbody('tbl-hf', d.halb.slice(1).map(phaseRow));
 
-      tbody('tbl-hf',clean(d.halb)
-        .map(r=>`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${qualBadge(r[5])}</td></tr>`));
-
-      tbody('tbl-fin',clean(d.finale)
-        .map(r=>`<tr><td>${placeBadge(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
+      /* Finale */
+      tbody('tbl-fin', d.finale.slice(1)
+        .map(r=>`<tr><td>${badgePlace(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`));
 
       /* Zeitstempel */
-      const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
-      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+ts);
-
-    }).catch(e=>console.error('Fehler beim Laden:',e));
-
-    /* Sponsor-Leiste einmalig befüllen */
-    if(!document.getElementById('sponsorTrack').children.length){
-      const html = CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('');
-      document.getElementById('sponsorTrack').innerHTML = html + html; /* verdoppeln für Endlos-Scroll */
-    }
+      const t=new Date().toLocaleTimeString('de-DE',{hour12:false});
+      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+t);
+    }).catch(e=>console.error(e));
   }
-  build(); setInterval(build,CFG.refresh);
 
-  /* ------ Tabs ------ */
-  document.querySelectorAll('#tabs button').forEach(b=>{
-    b.onclick=()=>{
-      document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
-      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));
+  /* ---- Sponsors once ---- */
+  document.getElementById('sponsorTrack').innerHTML =
+    CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
+
+  /* ---- Initial + Polling ---- */
+  fetchAndRender(); setInterval(fetchAndRender,CFG.refresh);
+
+  /* ---- Tabs ---- */
+  document.querySelectorAll('#tabs button').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b===btn));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
     };
   });
 </script>
