@@ -2,40 +2,34 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title>Stoppelrennen Dobberzin 2025 – Live-Ergebnisse 1</title>
+    <title>Stoppelrennen Dobberzin 2025 – Live-Ergebnisse</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- ------------- STYLES ------------- -->
     <style>
         :root{
             --green:#C6EFCE; --greenText:#006100;
             --red:#FFC7CE;   --redText:#9C0006;
             --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183;
             --final:#E2F0D9;
-            --stickyTop:80px;                 /* wird per JS gleich korrigiert */
+            --stickyTop:80px;                /* wird per JS überschrieben */
         }
-
         *{box-sizing:border-box}
-        body{margin:0;background:#f7f7f7;font:400 16px/1.4 Roboto,Arial,sans-serif;color:#111}
+        body{margin:0;font:400 16px/1.4 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        /* ---------- Header ---------- */
         header{background:#183028;color:#fff;text-align:center;
             padding:8px 16px;position:sticky;top:0;z-index:10}
         header img{height:48px;margin-right:8px;vertical-align:middle}
 
-        /* ---------- Sponsor-Ticker ---------- */
+        /* Sponsor-Ticker */
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:ticker 25s linear infinite}
-        @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
 
-        /* ---------- Tabs ---------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
 
-        /* ---------- Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
@@ -46,7 +40,6 @@
         tbody tr:nth-child(even){background:#fafafa}
         td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
 
-        /* ---------- Badges ---------- */
         .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.85em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
@@ -58,32 +51,28 @@
         .updated{text-align:center;font-size:12px;color:#666;margin-top:4px}
     </style>
 </head>
-
 <body>
 
-<!-- ---------- Sticky-Offset JavaScript (muss VOR dem Header stehen) -->
+<!-- Sticky-Offset ermitteln -->
 <script>
-  (function fixSticky(){
+  (function(){
     function apply(){
-      const top = document.querySelector('header').offsetHeight +
+      const top= document.querySelector('header').offsetHeight+
         document.getElementById('sponsors').offsetHeight;
-      document.documentElement.style.setProperty('--stickyTop', top + 'px');
+      document.documentElement.style.setProperty('--stickyTop',top+'px');
     }
-    window.addEventListener('load', apply);
-    window.addEventListener('resize', apply);
+    window.addEventListener('load',apply);
+    window.addEventListener('resize',apply);
   })();
 </script>
 
-<!-- ---------- HEADER ------------ -->
 <header>
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
-    Stoppelrennen Dobberzin 2025 – Live-Ergebnisse
+    Stoppelrennen Dobberzin 2025 - 1
 </header>
 
-<!-- ---------- SPONSOREN ---------- -->
 <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
 
-<!-- ---------- TABS --------------- -->
 <nav id="tabs">
     <button data-tab="leaderboard" class="active">Leaderboard</button>
     <button data-tab="viertel">Viertelfinale</button>
@@ -91,30 +80,12 @@
     <button data-tab="finale">Finale</button>
 </nav>
 
-<!-- ---------- SECTIONS ----------- -->
-<div id="leaderboard" class="section active">
-    <div class="tableWrap"><table id="tbl-leader"></table></div>
-    <div class="updated" id="upd-leader"></div>
-</div>
+<div id="leaderboard" class="section active"><div class="tableWrap"><table id="tbl-leader"></table></div><div class="updated" id="upd-leader"></div></div>
+<div id="viertel"     class="section"><div class="tableWrap"><table id="tbl-vf"></table></div><div class="updated" id="upd-vf"></div></div>
+<div id="halb"        class="section"><div class="tableWrap"><table id="tbl-hf"></table></div><div class="updated" id="upd-hf"></div></div>
+<div id="finale"      class="section"><div class="tableWrap"><table id="tbl-fin"></table></div><div class="updated" id="upd-fin"></div></div>
 
-<div id="viertel" class="section">
-    <div class="tableWrap"><table id="tbl-vf"></table></div>
-    <div class="updated" id="upd-vf"></div>
-</div>
-
-<div id="halb" class="section">
-    <div class="tableWrap"><table id="tbl-hf"></table></div>
-    <div class="updated" id="upd-hf"></div>
-</div>
-
-<div id="finale" class="section">
-    <div class="tableWrap"><table id="tbl-fin"></table></div>
-    <div class="updated" id="upd-fin"></div>
-</div>
-
-<!-- ---------- SCRIPT ------------- -->
 <script>
-  /* ------------------------------------------------------------------ */
   const CONFIG={
     api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec',
     refresh:30000,
@@ -125,7 +96,7 @@
     ]
   };
 
-  /* ---------- UTIL ---------- */
+  /* -------- Badges -------- */
   const badgeQual=v=>v==='✓'
     ?'<span class="badge q">✓</span>'
     :v==='✗'?'<span class="badge out">✗</span>':'';
@@ -135,14 +106,18 @@
     if(n===1) return '<span class="badge gold">1</span>';
     if(n===2) return '<span class="badge silver">2</span>';
     if(n===3) return '<span class="badge bronze">3</span>';
-    return n ? `<span class="badge final">${n}</span>` : '';
+    return n?`<span class="badge final">${n}</span>`:'';
   }
 
-  /* ---------- RENDER ---------- */
+  /* -------- Renderers -------- */
+  function cleanRows(rows){
+    return rows.slice(1).filter(r=>r[0]!=='' && r[0]!=='Platz'); // Headerzeile überspringen
+  }
+
   function renderLeaderboard(rows){
     const tbl=document.getElementById('tbl-leader');
     let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th><th>Punkte</th></tr></thead><tbody>';
-    rows.slice(1).forEach(r=>{
+    cleanRows(rows).forEach(r=>{
       html+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
     });
     tbl.innerHTML=html+'</tbody>';
@@ -150,7 +125,7 @@
   function renderPhase(rows,id){
     const tbl=document.getElementById(id);
     let html='<thead><tr><th>Rennen</th><th>Startnr</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead><tbody>';
-    rows.slice(1).forEach(r=>{
+    cleanRows(rows).forEach(r=>{
       html+=`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQual(r[5])}</td></tr>`;
     });
     tbl.innerHTML=html+'</tbody>';
@@ -158,24 +133,22 @@
   function renderFinale(rows){
     const tbl=document.getElementById('tbl-fin');
     let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th></tr></thead><tbody>';
-    rows.slice(1).forEach(r=>{
+    cleanRows(rows).forEach(r=>{
       html+=`<tr><td>${badgePlace(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
     });
     tbl.innerHTML=html+'</tbody>';
   }
   function renderSponsors(arr){
     const track=document.getElementById('sponsorTrack');
-    const row  = arr.map(s=>
-      `<span class="item"><a href="${s.link}" target="_blank">
-       <img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
-    track.innerHTML = row + row;          /* verdoppeln für Endlos-Loop */
+    const row=arr.map(s=>`<span class="item"><a href="${s.link}" target="_blank">
+                <img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
+    track.innerHTML=row+row;            // verdoppeln für Endlos-Loop
   }
 
-  /* ---------- DATA LOAD ---------- */
+  /* -------- Daten laden -------- */
   async function loadAll(){
     try{
-      const res  = await fetch(CONFIG.api+'?ts='+Date.now());
-      const data = await res.json();
+      const data=await (await fetch(CONFIG.api+'?ts='+Date.now())).json();
       renderLeaderboard(data.leaderboard);
       renderPhase(data.viertel ,'tbl-vf');
       renderPhase(data.halb    ,'tbl-hf');
@@ -185,11 +158,11 @@
       ['leader','vf','hf','fin'].forEach(id=>{
         document.getElementById('upd-'+id).textContent='Aktualisiert: '+t;
       });
-    }catch(e){console.error('Daten konnten nicht geladen werden:',e);}
+    }catch(e){console.error(e);}
   }
   loadAll(); setInterval(loadAll,CONFIG.refresh);
 
-  /* ---------- Tabs ---------- */
+  /* -------- Tabs -------- */
   document.querySelectorAll('#tabs button').forEach(btn=>{
     btn.onclick=()=>{
       document.querySelectorAll('#tabs button')
