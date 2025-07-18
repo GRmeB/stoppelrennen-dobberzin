@@ -11,11 +11,21 @@
             --green:#C6EFCE;--greenText:#006100;
             --red:#FFC7CE;  --redText:#9C0006;
             --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
-            --stickyTop:0px;                       /* Kopfzeile klebt ganz oben */
+            --stickyTop:0px;          /* Kopfzeile klebt ganz oben */
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
+        /* ---------- Spinner ---------- */
+        #spinner{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
+            background:rgba(255,255,255,.7);z-index:999}
+        #spinner.hide{display:none}
+        #spinner::after{
+            content:"";width:48px;height:48px;border:6px solid #ccc;border-top-color:#183028;
+            border-radius:50%;animation:spin .9s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ---------- Kopf & Sponsor ---------- */
         #masthead{position:sticky;top:0;z-index:10;background:#183028}
         header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
         header img{height:48px;margin-right:8px;vertical-align:middle}
@@ -24,10 +34,12 @@
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
+        /* ---------- Tabs ---------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
 
+        /* ---------- Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
@@ -47,12 +59,17 @@
 </head>
 
 <body>
+<!-- Spinner -->
+<div id="spinner" class="hide"></div>
+
+<!-- Kopfbereich -->
 <div id="masthead">
     <header><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
         Stoppelrennen Dobberzin 2025</header>
     <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
 </div>
 
+<!-- Tabs -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Leaderboard</button>
     <button data-tab="vf">Viertelfinale</button>
@@ -60,7 +77,7 @@
     <button data-tab="fin">Finale</button>
 </nav>
 
-<!-- Tabellencontainer -->
+<!-- Tabellen -->
 <div id="leader" class="section active"><div class="tableWrap"><table id="tbl-leader"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-leader"></div></div>
 <div id="vf"     class="section"><div class="tableWrap"><table id="tbl-vf"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-vf"></div></div>
 <div id="hf"     class="section"><div class="tableWrap"><table id="tbl-hf"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-hf"></div></div>
@@ -74,7 +91,7 @@
     sponsors:[
       {n:'MGQ',   l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
-      {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',               href:'https://nike.com'}
+      {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',                     href:'https://nike.com'}
     ]
   };
 
@@ -86,39 +103,41 @@
   const q=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
   const p=x=>{const n=+x;return n===1?'<span class="badge gold">1</span>':n===2?'<span class="badge silver">2</span>':n===3?'<span class="badge bronze">3</span>':n?`<span class="badge final">${n}</span>`:'';};
 
-  /* ---------- fill-Funktion ---------- */
-  function fill(tblId, data, header, buildRow){
+  /* Spinner helper */
+  const spin=on=>document.getElementById('spinner').classList.toggle('hide',!on);
+
+  /* fill-Funktion */
+  function fill(tblId,data,header,buildRow){
     const {v,bg}=data;
     const tbl=document.getElementById(tblId);
     tbl.querySelector('thead').innerHTML='<tr>'+header.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-
-    const body = [];
+    const body=[];
     v.slice(1).forEach((row,i)=>{
-      /* leere Zeile = alle Zellen leer oder nur erste Spalte leer */
-      const isEmpty = row.every(c=>c===''||c===null);
-      if(isEmpty) return;                            // → Zeile überspringen
-      body.push( buildRow(row,bg[i+1]) );
+      const isEmpty=row.every(c=>c===''||c===null);
+      if(isEmpty) return;
+      body.push(buildRow(row,bg[i+1]));
     });
-
-    tbl.querySelector('tbody').innerHTML = body.join('');
+    tbl.querySelector('tbody').innerHTML=body.join('');
   }
 
   /* Zeilen-Generatoren */
-  const rowLeader = (r,c) => `<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
-  const rowPhase  = (r,c) => `<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
-  const rowFin    = (r,c) => `<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+  const rowLeader=(r,c)=>`<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+  const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
+  const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
-  /* Daten laden */
+  /* Daten laden (mit Spinner) */
   async function load(){
-    const d=await (await fetch(CFG.api+'?t='+Date.now())).json();
-
-    fill('tbl-leader', d.leader, ['Platz','Startnummer','Fahrer','Punkte'], rowLeader);
-    fill('tbl-vf',     d.vf,     ['Rennen','Startnummer','Fahrer','Qualifiziert'], rowPhase);
-    fill('tbl-hf',     d.hf,     ['Rennen','Startnummer','Fahrer','Qualifiziert'], rowPhase);
-    fill('tbl-fin',    d.fin,    ['Endplatzierung','Startnummer','Fahrer'],        rowFin);
-
-    const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
-    ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+ts);
+    spin(true);
+    try{
+      const d=await (await fetch(CFG.api+'?t='+Date.now())).json();
+      fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
+      fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
+      fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
+      fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
+      const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
+      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+ts);
+    }catch(e){console.error('Fehler beim Laden',e);}
+    spin(false);
   }
   load(); setInterval(load,CFG.refresh);
 
