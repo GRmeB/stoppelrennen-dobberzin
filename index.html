@@ -7,71 +7,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root{
-            --green:#C6EFCE; --greenText:#006100;
-            --red:#FFC7CE;   --redText:#9C0006;
-            --gold:#FFD966;  --silver:#D9D9D9; --bronze:#F4B183;
-            --final:#E2F0D9;
-            --stickyTop:80px;                /* wird per JS überschrieben */
+            --green:#C6EFCE;--greenText:#006100;
+            --red:#FFC7CE;  --redText:#9C0006;
+            --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
+            --stickyTop:80px;
         }
+        @media(min-width:600px){:root{--stickyTop:74px}}
         *{box-sizing:border-box}
         body{margin:0;font:400 16px/1.4 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
-
-        header{background:#183028;color:#fff;text-align:center;
-            padding:8px 16px;position:sticky;top:0;z-index:10}
+        header{background:#183028;color:#fff;text-align:center;padding:8px 16px;position:sticky;top:0;z-index:10}
         header img{height:48px;margin-right:8px;vertical-align:middle}
-
         /* Sponsor-Ticker */
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:ticker 25s linear infinite}
         @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
         #sponsors img{height:36px;max-width:140px;vertical-align:middle}
-
+        /* Tabs */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
-
+        /* Sektionen / Tabellen */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
-
-        table{width:100%;border-collapse:collapse;margin-top:8px;
-            font-size:clamp(14px,2.5vw,16px)}
+        table{width:100%;border-collapse:collapse;margin-top:8px;font-size:clamp(14px,2.5vw,16px)}
         thead th{background:#e0e0e0;position:sticky;top:var(--stickyTop)}
         tbody tr:nth-child(even){background:#fafafa}
         td,th{padding:4px 8px;border-bottom:1px solid #ddd;text-align:left}
-
+        /* Badges */
         .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.85em}
         .badge.q{background:var(--green);color:var(--greenText)}
         .badge.out{background:var(--red);color:var(--redText)}
-        .badge.gold{background:var(--gold)}
-        .badge.silver{background:var(--silver)}
-        .badge.bronze{background:var(--bronze)}
-        .badge.final{background:var(--final)}
-
+        .badge.gold{background:var(--gold)}.badge.silver{background:var(--silver)}
+        .badge.bronze{background:var(--bronze)}.badge.final{background:var(--final)}
         .updated{text-align:center;font-size:12px;color:#666;margin-top:4px}
     </style>
 </head>
 <body>
-
-<!-- Sticky-Offset ermitteln -->
-<script>
-  (function(){
-    function apply(){
-      const top= document.querySelector('header').offsetHeight+
-        document.getElementById('sponsors').offsetHeight;
-      document.documentElement.style.setProperty('--stickyTop',top+'px');
-    }
-    window.addEventListener('load',apply);
-    window.addEventListener('resize',apply);
-  })();
-</script>
-
 <header>
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="Logo">
-    Stoppelrennen Dobberzin 2025 - 1
+    Stoppelrennen Dobberzin 2025 – Live-Ergebnisse
 </header>
 
-<div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
+<div id="sponsors"><div id="sponsorTrack" class="track"></div></div>
 
 <nav id="tabs">
     <button data-tab="leaderboard" class="active">Leaderboard</button>
@@ -90,87 +68,66 @@
     api:'https://script.google.com/macros/s/AKfycbxwYM9iv0b0LfLZrwu1Pr579pQ5_cos7iGFEUkJE556HYNw2peBBsGvmEctSqVz-xhE1Q/exec',
     refresh:30000,
     sponsors:[
-      {name:'MGQ Solutions',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
+      {name:'MGQ',logo:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',link:'https://mgq.solutions'},
       {name:'Adidas',logo:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',link:'https://adidas.de'},
       {name:'Nike',logo:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',link:'https://nike.com'}
     ]
   };
 
-  /* -------- Badges -------- */
-  const badgeQual=v=>v==='✓'
-    ?'<span class="badge q">✓</span>'
-    :v==='✗'?'<span class="badge out">✗</span>':'';
+  /* ---------- Badges ---------- */
+  const badgeQual=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
+  const badgePlace=p=>({1:'gold',2:'silver',3:'bronze'}[p]?
+    `<span class="badge ${ {1:'gold',2:'silver',3:'bronze'}[p] }">${p}</span>`:
+    (p?`<span class="badge final">${p}</span>`:''));
 
-  function badgePlace(p){
-    const n=+p;
-    if(n===1) return '<span class="badge gold">1</span>';
-    if(n===2) return '<span class="badge silver">2</span>';
-    if(n===3) return '<span class="badge bronze">3</span>';
-    return n?`<span class="badge final">${n}</span>`:'';
+  /* ---------- Render ---------- */
+  function cleanRows(rows){                      // <-- geändert
+    return rows.slice(1).filter(r=>Number.isFinite(+r[0]));
   }
-
-  /* -------- Renderers -------- */
-  function cleanRows(rows){
-    return rows.slice(1).filter(r=>r[0]!=='' && r[0]!=='Platz'); // Headerzeile überspringen
-  }
-
   function renderLeaderboard(rows){
-    const tbl=document.getElementById('tbl-leader');
+    const tb=document.getElementById('tbl-leader');
     let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th><th>Punkte</th></tr></thead><tbody>';
-    cleanRows(rows).forEach(r=>{
-      html+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
-    });
-    tbl.innerHTML=html+'</tbody>';
+    cleanRows(rows).forEach(r=>html+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`);
+    tb.innerHTML=html+'</tbody>';
   }
   function renderPhase(rows,id){
-    const tbl=document.getElementById(id);
+    const tb=document.getElementById(id);
     let html='<thead><tr><th>Rennen</th><th>Startnr</th><th>Fahrer</th><th>Qualifiziert</th></tr></thead><tbody>';
-    cleanRows(rows).forEach(r=>{
-      html+=`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQual(r[5])}</td></tr>`;
-    });
-    tbl.innerHTML=html+'</tbody>';
+    cleanRows(rows).forEach(r=>html+=`<tr><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${badgeQual(r[5])}</td></tr>`);
+    tb.innerHTML=html+'</tbody>';
   }
   function renderFinale(rows){
-    const tbl=document.getElementById('tbl-fin');
+    const tb=document.getElementById('tbl-fin');
     let html='<thead><tr><th>Platz</th><th>Startnr</th><th>Fahrer</th></tr></thead><tbody>';
-    cleanRows(rows).forEach(r=>{
-      html+=`<tr><td>${badgePlace(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
-    });
-    tbl.innerHTML=html+'</tbody>';
+    cleanRows(rows).forEach(r=>html+=`<tr><td>${badgePlace(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`);
+    tb.innerHTML=html+'</tbody>';
   }
   function renderSponsors(arr){
-    const track=document.getElementById('sponsorTrack');
-    const row=arr.map(s=>`<span class="item"><a href="${s.link}" target="_blank">
-                <img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
-    track.innerHTML=row+row;            // verdoppeln für Endlos-Loop
+    const t=document.getElementById('sponsorTrack');
+    const row=arr.map(s=>`<span class="item"><a href="${s.link}" target="_blank"><img src="${s.logo}" alt="${s.name}"></a></span>`).join('');
+    t.innerHTML=row+row;
   }
 
-  /* -------- Daten laden -------- */
+  /* ---------- Load ---------- */
   async function loadAll(){
     try{
-      const data=await (await fetch(CONFIG.api+'?ts='+Date.now())).json();
-      renderLeaderboard(data.leaderboard);
-      renderPhase(data.viertel ,'tbl-vf');
-      renderPhase(data.halb    ,'tbl-hf');
-      renderFinale(data.finale);
+      const j=await (await fetch(CONFIG.api+'?ts='+Date.now())).json();
+      renderLeaderboard(j.leaderboard); renderPhase(j.viertel,'tbl-vf');
+      renderPhase(j.halb,'tbl-hf');     renderFinale(j.finale);
       renderSponsors(CONFIG.sponsors);
       const t=new Date().toLocaleTimeString('de-DE',{hour12:false});
-      ['leader','vf','hf','fin'].forEach(id=>{
-        document.getElementById('upd-'+id).textContent='Aktualisiert: '+t;
-      });
+      ['leader','vf','hf','fin'].forEach(id=>document.getElementById('upd-'+id).textContent='Aktualisiert: '+t);
     }catch(e){console.error(e);}
   }
   loadAll(); setInterval(loadAll,CONFIG.refresh);
 
-  /* -------- Tabs -------- */
-  document.querySelectorAll('#tabs button').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('#tabs button')
-        .forEach(b=>b.classList.toggle('active',b===btn));
-      document.querySelectorAll('.section')
-        .forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
+  /* ---------- Tabs ---------- */
+  for(const b of document.querySelectorAll('#tabs button')){
+    b.onclick=()=>{
+      document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));
     };
-  });
+  }
 </script>
 </body>
 </html>
