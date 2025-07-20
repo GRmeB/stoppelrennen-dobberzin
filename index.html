@@ -11,26 +11,30 @@
             --green:#C6EFCE;--greenText:#006100;
             --red:#FFC7CE;  --redText:#9C0006;
             --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
-            --stickyTop:0px;          /* Kopfzeile klebt ganz oben */
+            --stickyTop:0px;                    /* Kopfzeile klebt ganz oben */
+            --spinner-img:url('./images/sport-car.png'); /* <-- DEIN Bild */
+            --spinner-size:72px;                /* Größe des Autos */
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        /* ---------- Spinner ---------- */
+        /* ---------- Spinner (Stock-Car) ---------- */
         #spinner{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
             background:rgba(255,255,255,.7);z-index:999}
         #spinner.hide{display:none}
         #spinner::after{
-            content:"";width:48px;height:48px;border:6px solid #ccc;border-top-color:#183028;
-            border-radius:50%;animation:spin .9s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
+            content:"";width:var(--spinner-size);height:var(--spinner-size);
+            background:var(--spinner-img) center/contain no-repeat;
+            animation:spinCar 1.2s linear infinite}
+        @keyframes spinCar{to{transform:rotate(360deg)}}
 
         /* ---------- Kopf & Sponsor ---------- */
         #masthead{position:sticky;top:0;z-index:10;background:#183028}
         header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
         header img{height:80px;margin-right:8px;vertical-align:middle}
+
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
-        #sponsors .track{display:flex;gap:64px;animation:scroll 25s linear infinite;padding:4px 0}
+        #sponsors .track{display:flex;gap:64px;animation:scroll 10s linear infinite;padding:4px 0}
         #sponsors img{height:80px;max-width:140px;vertical-align:middle}
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
@@ -86,17 +90,16 @@
 <script>
   /* ---------- Config ---------- */
   const CFG={
-    //api: 'https://script.google.com/macros/s/AKfycbzHrBOvZ8e3WqjDcu5ijukQuT1Z6q6SLI6sM7zkSrQEPPtmw63zp6gzJ-_ldmAUk_BcxQ/exec',
-    api: 'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
+    api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
     refresh:30000,
     sponsors:[
       {n:'MGQ',   l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
-      {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',                     href:'https://nike.com'}
+      {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',href:'https://nike.com'}
     ]
   };
 
-  /* Sponsor-Ticker */
+  /* Sponsor-Ticker füllen */
   document.getElementById('sponsorTrack').innerHTML =
     CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
 
@@ -114,8 +117,7 @@
     tbl.querySelector('thead').innerHTML='<tr>'+header.map(h=>`<th>${h}</th>`).join('')+'</tr>';
     const body=[];
     v.slice(1).forEach((row,i)=>{
-      const isEmpty=row.every(c=>c===''||c===null);
-      if(isEmpty) return;
+      if(row.every(c=>c===''||c===null)) return;
       body.push(buildRow(row,bg[i+1]));
     });
     tbl.querySelector('tbody').innerHTML=body.join('');
@@ -126,7 +128,7 @@
   const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
   const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
-  /* Daten laden (mit Spinner) */
+  /* Daten laden */
   async function load(){
     spin(true);
     try{
@@ -143,9 +145,11 @@
   load(); setInterval(load,CFG.refresh);
 
   /* Tabs */
-  document.querySelectorAll('#tabs button').forEach(b=>{
-    b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
-      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));};
+  document.querySelectorAll('#tabs button').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b===btn));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
+    };
   });
 </script>
 </body>
