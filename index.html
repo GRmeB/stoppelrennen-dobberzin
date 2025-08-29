@@ -5,46 +5,39 @@
     <title>Stoppelrennen Dobberzin 2025</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
     <style>
         :root{
             --green:#C6EFCE;--greenText:#006100;
             --red:#FFC7CE;  --redText:#9C0006;
             --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
-            --stickyTop:0px;                           /* Kopfzeile klebt ganz oben */
-            --spinner-img:url('./images/car2.gif');     /* dein GIF */
-            --spinner-size:130px;                       /* Bildgröße */
+            --stickyTop:0px;
+            --spinner-img:url('./images/car2.gif');
+            --spinner-size:130px;
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        /* ---------- Spinner (nur GIF) ---------- */
-        #spinner{
-            position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
-            background:rgba(255,255,255,.7);z-index:999}
+        /* Spinner */
+        #spinner{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.7);z-index:999}
         #spinner.hide{display:none}
-        #spinner::after{
-            content:"";
-            width:var(--spinner-size);height:var(--spinner-size);
-            background:var(--spinner-img) center/contain no-repeat;
-        }
+        #spinner::after{content:"";width:var(--spinner-size);height:var(--spinner-size);background:var(--spinner-img) center/contain no-repeat}
 
-        /* ---------- Kopf & Sponsor ---------- */
+        /* Kopf & Sponsor */
         #masthead{position:sticky;top:0;z-index:10;background:#183028}
         header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
         header img{height:80px;margin-right:8px;vertical-align:middle}
-
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:scroll 10s linear infinite;padding:4px 0}
         #sponsors img{height:80px;max-width:140px;vertical-align:middle}
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-        /* ---------- Tabs ---------- */
+        /* Tabs */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
+        .hidden{display:none !important}
 
-        /* ---------- Tabellen ---------- */
+        /* Tabellen */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
@@ -62,15 +55,16 @@
         .updated{text-align:center;font-size:12px;color:#666;margin-top:6px}
     </style>
 </head>
-
 <body>
 <!-- Spinner -->
 <div id="spinner" class="hide"></div>
 
 <!-- Kopfbereich -->
 <div id="masthead">
-    <header><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
-        Stoppelrennen Dobberzin 2025 – LIVE</header>
+    <header>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
+        Stoppelrennen Dobberzin 2025 – LIVE
+    </header>
     <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
 </div>
 
@@ -83,10 +77,22 @@
 </nav>
 
 <!-- Tabellen -->
-<div id="leader" class="section active"><div class="tableWrap"><table id="tbl-leader"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-leader"></div></div>
-<div id="vf" class="section"><div class="tableWrap"><table id="tbl-vf"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-vf"></div></div>
-<div id="hf" class="section"><div class="tableWrap"><table id="tbl-hf"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-hf"></div></div>
-<div id="fin" class="section"><div class="tableWrap"><table id="tbl-fin"><thead></thead><tbody></tbody></table></div><div class="updated" id="upd-fin"></div></div>
+<div id="leader" class="section active">
+    <div class="tableWrap"><table id="tbl-leader"><thead></thead><tbody></tbody></table></div>
+    <div class="updated" id="upd-leader"></div>
+</div>
+<div id="vf" class="section">
+    <div class="tableWrap"><table id="tbl-vf"><thead></thead><tbody></tbody></table></div>
+    <div class="updated" id="upd-vf"></div>
+</div>
+<div id="hf" class="section">
+    <div class="tableWrap"><table id="tbl-hf"><thead></thead><tbody></tbody></table></div>
+    <div class="updated" id="upd-hf"></div>
+</div>
+<div id="fin" class="section">
+    <div class="tableWrap"><table id="tbl-fin"><thead></thead><tbody></tbody></table></div>
+    <div class="updated" id="upd-fin"></div>
+</div>
 
 <script>
   const CFG={
@@ -99,7 +105,7 @@
     ]
   };
 
-  // Sponsorenlaufband
+  // Sponsoren-Laufband
   document.getElementById('sponsorTrack').innerHTML =
     CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
 
@@ -108,17 +114,20 @@
 
   const spin=on=>document.getElementById('spinner').classList.toggle('hide',!on);
 
+  // Tabellen-Befüllung
   function fill(id,data,head,rowFn){
     const {v,bg}=data, tbl=document.getElementById(id);
     tbl.querySelector('thead').innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-    tbl.querySelector('tbody').innerHTML = v.slice(1).filter(r=>!r.every(c=>c===''||c===null))
-      .map((r,i)=>rowFn(r,bg[i+1])).join('');
+    tbl.querySelector('tbody').innerHTML = v.slice(1) // skip header
+      .filter(r=>!r.every(c=>c===''||c===null))       // skip komplett leere Zeilen
+      .map((r,i)=>rowFn(r,bg[i+1]||['']))             // fallback, falls bg fehlt
+      .join('');
   }
   const rowLeader=(r,c)=>`<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
   const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
   const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
-  // Tab- und Sektionen-Referenzen
+  // Tab/Sektion-Referenzen
   const btn = {
     leader: document.querySelector('button[data-tab="leader"]'),
     vf:     document.querySelector('button[data-tab="vf"]'),
@@ -132,84 +141,69 @@
     fin:    document.getElementById('fin')
   };
 
+  function currentActiveTab(){
+    return document.querySelector('#tabs button.active')?.dataset.tab || 'leader';
+  }
   function showTab(id){
     Object.keys(btn).forEach(k=>{
       btn[k].classList.toggle('active',k===id && !btn[k].classList.contains('hidden'));
       sec[k].classList.toggle('active',k===id);
     });
   }
-  function currentActiveTab(){
-    return document.querySelector('#tabs button.active')?.dataset.tab || 'leader';
+
+  // --- Vorrunden-„fertig“-Heuristik auf Basis der gelieferten Leaderboard-Daten ---
+  // Bedingung: alle sichtbaren Leaderboard-Zeilen haben in Spalte 4 ("Punkte") einen Wert (nicht leer).
+  function vorrundeFertigFromLeader(leaderData){
+    const rows = leaderData.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
+    if(!rows.length) return false;
+    // Treat "0" als Wert (String oder Zahl) – leer ist nur: null/undefined/""
+    return rows.every(r => r[3] !== '' && r[3] != null);
   }
 
-  // ersetzt die alte VorrundeFertig
-  function VorrundeFertig(data){
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
-    if(!rows.length) return false;
-    // Punkte (Spalte Index 3) müssen überall > 0 sein
-    return rows.every(r => r[3] !== '' && r[3] != null && !isNaN(+r[3]) && +r[3] > 0);
-  }
-
-  // optional strenger: Phase gilt erst als fertig, wenn jede Zeile ✓ oder ✗ hat
-  // UND es mindestens ein ✓ gibt (sonst frühzeitiges „alles ✗“ verhindert).
-  function PhaseFertig(data){
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
-    if(!rows.length) return false;
-    const allMarked = rows.every(r => r[5] === '✓' || r[5] === '✗');
-    const anyQ      = rows.some (r => r[5] === '✓');
-    return allMarked && anyQ;
-  }
-
-  // Finale: jede Zeile hat eine Endplatzierung (Index 4) > 0
-  function FinaleFertig(data){
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
-    if(!rows.length) return false;
-    return rows.every(r => r[4] !== '' && r[4] != null && !isNaN(+r[4]) && +r[4] > 0);
+  // KO-Tabs gemeinsam ein/ausblenden
+  function setKoVisibility(show){
+    ['vf','hf','fin'].forEach(k=>{
+      btn[k].classList.toggle('hidden', !show);
+      sec[k].classList.toggle('hidden', !show);
+    });
+    const active=currentActiveTab();
+    if((active==='vf'||active==='hf'||active==='fin') && !show){
+      showTab('leader');
+    }
   }
 
   async function load(){
     spin(true);
     try{
-      const d=await (await fetch(CFG.api+'?t='+Date.now())).json();
+      const d = await (await fetch(CFG.api+'?t='+Date.now())).json();
 
-      // Tabellen füllen
+      // Tabellen befüllen
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
-      fill('tbl-vf',    d.vf,['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
-      fill('tbl-hf',    d.hf,['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
-      fill('tbl-fin',   d.fin,['Endplatzierung','Startnummer','Fahrer'],rowFin);
+      fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
+      fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
+      fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
 
-      // Sichtbarkeit je Phase
-      const fertigLeader = VorrundeFertig(d.leader);
-      const fertigVF     = fertigLeader && PhaseFertig(d.vf);
-      const fertigHF     = fertigVF && PhaseFertig(d.hf);
-      const fertigFin    = fertigHF && FinaleFertig(d.fin);
-
-      // Tabs & Sektionen umschalten
-      btn.vf.classList.toggle('hidden', !fertigLeader);
-      sec.vf.classList.toggle('hidden', !fertigLeader);
-
-      btn.hf.classList.toggle('hidden', !fertigVF);
-      sec.hf.classList.toggle('hidden', !fertigVF);
-
-      btn.fin.classList.toggle('hidden', !fertigHF);
-      sec.fin.classList.toggle('hidden', !fertigHF);
-
-      // Falls gerade ein "verschwundener" Tab aktiv war → zurück
-      const active=currentActiveTab();
-      if((active==='vf'  && !fertigLeader)||
-        (active==='hf'  && !fertigVF)   ||
-        (active==='fin' && !fertigHF)){
-        showTab('leader');
-      }
+      // KO-Sichtbarkeit ausschließlich aus API-Daten ableiten
+      const fertig = vorrundeFertigFromLeader(d.leader);
+      setKoVisibility(fertig);
 
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
-      ['leader','vf','hf','fin'].forEach(i=>document.getElementById('upd-'+i).textContent='Aktualisiert: '+ts);
-    }catch(e){console.error(e);}
+      ['leader','vf','hf','fin'].forEach(i=>{
+        const el=document.getElementById('upd-'+i);
+        if(el) el.textContent='Aktualisiert: '+ts;
+      });
+    }catch(e){
+      console.error(e);
+      // bei Fehler lieber ausblenden
+      setKoVisibility(false);
+    }
     spin(false);
   }
-  load(); setInterval(load,CFG.refresh);
 
-  // Tabs
+  load();
+  setInterval(load, CFG.refresh);
+
+  // Tab-Klicks (versteckte Tabs ignorieren)
   document.querySelectorAll('#tabs button').forEach(b=>{
     b.onclick=()=>{
       if(b.classList.contains('hidden')) return;
