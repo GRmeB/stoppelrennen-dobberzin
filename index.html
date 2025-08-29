@@ -71,7 +71,6 @@
 <!-- Tabs -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Vorrunde</button>
-    <!-- KO-Tabs initial versteckt -->
     <button data-tab="vf"  class="hidden">Viertelfinale</button>
     <button data-tab="hf"  class="hidden">Halbfinale</button>
     <button data-tab="fin" class="hidden">Finale</button>
@@ -97,7 +96,6 @@
 
 <script>
   const CFG={
-    // Nur dein bestehendes Apps-Script für die Tabellen
     api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
     refresh:30000,
     sponsors:[
@@ -105,14 +103,14 @@
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
       {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',               href:'https://nike.com'}
     ],
-    // Für den Sichtbarkeits-Check via gviz (keine Änderung an deinem Apps Script)
+    // gviz-Check auf Rennübersicht!B2:E193
     sheetId:'1gerTSMPMCxL1VqUBMRoi77LoLSpQ5hPoOYMO1UmqnaM',
     gidRennuebersicht:'1394865267',
-    eRangeStart:2,
-    eRangeEnd:193
+    rowStart:2,
+    rowEnd:193
   };
 
-  // Sponsoren-Laufband
+  // Sponsoren
   document.getElementById('sponsorTrack').innerHTML =
     CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
 
@@ -121,7 +119,7 @@
 
   const spin=on=>document.getElementById('spinner').classList.toggle('hide',!on);
 
-  // Tabellen-Befüllung
+  // Tabellen
   function fill(id,data,head,rowFn){
     const {v,bg}=data, tbl=document.getElementById(id);
     tbl.querySelector('thead').innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
@@ -134,7 +132,7 @@
   const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
   const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
-  // Tab/Sektion-Referenzen
+  // Tabs
   const btn = {
     leader: document.querySelector('button[data-tab="leader"]'),
     vf:     document.querySelector('button[data-tab="vf"]'),
@@ -158,28 +156,44 @@
     });
   }
 
-  // --- Exakter Check: Rennübersicht!E2:E193 muss voll sein ---
-  // robust via gviz: SELECT COUNT(E) WHERE E IS NOT NULL auf den Range E2:E193
-  async function isVorrundeCompleteByE(){
-    const need = CFG.eRangeEnd - CFG.eRangeStart + 1; // 192
-    const tq = `select count(E) where E is not null`;
+  // === Vorrunden-Check (ignoriert leere Startplätze) ===
+  // Liest Rennübersicht!B2:E193 und prüft:
+  //   - Zeile ist "aktiv", wenn B oder C oder D belegt (Startplatz existiert)
+  //   - Für jede aktive Zeile muss E belegt sein
+  async function isVorrundeCompleteFlexible(){
+    const range = `B${CFG.rowStart}:E${CFG.rowEnd}`;
+    const tq = `select B,C,D,E`; // alles holen, im Client prüfen
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq`
       + `?gid=${CFG.gidRennuebersicht}`
-      + `&range=${encodeURIComponent('E'+CFG.eRangeStart+':E'+CFG.eRangeEnd)}`
+      + `&range=${encodeURIComponent(range)}`
       + `&tq=${encodeURIComponent(tq)}&tqx=out:json`;
     try{
       const txt = await (await fetch(url,{cache:'no-store'})).text();
       const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?$/);
-      if(!m) { console.warn('gviz response parse fail'); return false; }
+      if(!m) return false;
       const payload = JSON.parse(m[1]);
-      const val = payload?.table?.rows?.[0]?.c?.[0]?.v ?? 0;
-      const ok = Number(val) === need;
-      // Debug im Console-Log, um später schnell zu sehen, warum es (nicht) klappt
-      console.log(`[E2:E193] filled=${val}/${need} -> ${ok?'OK':'NOT OK'}`);
+      const rows = payload.table?.rows || [];
+
+      let active = 0, withE = 0;
+      for(const r of rows){
+        // Spalten indices: 0=B,1=C,2=D,3=E
+        const c = r.c || [];
+        const hasB = c[0]?.v != null && String(c[0].v).trim() !== '';
+        const hasC = c[1]?.v != null && String(c[1].v).trim() !== '';
+        const hasD = c[2]?.v != null && String(c[2].v).trim() !== '';
+        const activeRow = hasB || hasC || hasD;
+        if(activeRow){
+          active++;
+          const hasE = c[3]?.v != null && String(c[3].v).trim() !== '';
+          if(hasE) withE++;
+        }
+      }
+      const ok = active>0 && withE===active;
+      console.log(`[Vorrunde flexible] active=${active}, withE=${withE} -> ${ok?'OK':'NOT OK'}`);
       return ok;
     }catch(e){
-      console.warn('Fehler beim gviz-Check E2:E193', e);
-      return false; // failsafe: nicht anzeigen
+      console.warn('Fehler beim flexiblen Vorrunden-Check', e);
+      return false; // failsafe
     }
   }
 
@@ -198,19 +212,19 @@
   async function load(){
     spin(true);
     try{
-      // Tabellen (Apps Script) + E-Spalten-Check parallel
+      // Daten (Apps Script) + flexibler Vorrunden-Check parallel
       const [d, vorrundeOK] = await Promise.all([
         fetch(CFG.api+'?t='+Date.now(), {cache:'no-store'}).then(r=>r.json()),
-        isVorrundeCompleteByE()
+        isVorrundeCompleteFlexible()
       ]);
 
-      // Tabellen befüllen (rein aus Apps Script)
+      // Tabellen befüllen
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
       fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
 
-      // KO-Sichtbarkeit NUR anhand des E-Spalten-Checks
+      // KO-Sichtbarkeit
       setKoVisibility(vorrundeOK);
 
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
@@ -228,7 +242,7 @@
   load();
   setInterval(load, CFG.refresh);
 
-  // Tab-Klicks (versteckte Tabs ignorieren)
+  // Tabs: versteckte ignorieren
   document.querySelectorAll('#tabs button').forEach(b=>{
     b.onclick=()=>{
       if(b.classList.contains('hidden')) return;
