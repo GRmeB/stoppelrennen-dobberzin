@@ -71,9 +71,10 @@
 <!-- Tabs -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Vorrunde</button>
-    <button data-tab="vf">Viertelfinale</button>
-    <button data-tab="hf">Halbfinale</button>
-    <button data-tab="fin">Finale</button>
+    <!-- KO-Tabs initial versteckt -->
+    <button data-tab="vf"  class="hidden">Viertelfinale</button>
+    <button data-tab="hf"  class="hidden">Halbfinale</button>
+    <button data-tab="fin" class="hidden">Finale</button>
 </nav>
 
 <!-- Tabellen -->
@@ -81,28 +82,34 @@
     <div class="tableWrap"><table id="tbl-leader"><thead></thead><tbody></tbody></table></div>
     <div class="updated" id="upd-leader"></div>
 </div>
-<div id="vf" class="section">
+<div id="vf" class="section hidden">
     <div class="tableWrap"><table id="tbl-vf"><thead></thead><tbody></tbody></table></div>
     <div class="updated" id="upd-vf"></div>
 </div>
-<div id="hf" class="section">
+<div id="hf" class="section hidden">
     <div class="tableWrap"><table id="tbl-hf"><thead></thead><tbody></tbody></table></div>
     <div class="updated" id="upd-hf"></div>
 </div>
-<div id="fin" class="section">
+<div id="fin" class="section hidden">
     <div class="tableWrap"><table id="tbl-fin"><thead></thead><tbody></tbody></table></div>
     <div class="updated" id="upd-fin"></div>
 </div>
 
 <script>
   const CFG={
+    // Nur dein bestehendes Apps-Script für die Tabellen
     api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
     refresh:30000,
     sponsors:[
       {n:'MGQ',   l:'https://s3.ca-central-1.amazonaws.com/logojoy/logos/121849650/noBgColor.png',href:'https://mgq.solutions'},
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
       {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',               href:'https://nike.com'}
-    ]
+    ],
+    // Für den Sichtbarkeits-Check via gviz (keine Änderung an deinem Apps Script)
+    sheetId:'1gerTSMPMCxL1VqUBMRoi77LoLSpQ5hPoOYMO1UmqnaM',
+    gidRennuebersicht:'1394865267',
+    eRangeStart:2,
+    eRangeEnd:193
   };
 
   // Sponsoren-Laufband
@@ -118,9 +125,9 @@
   function fill(id,data,head,rowFn){
     const {v,bg}=data, tbl=document.getElementById(id);
     tbl.querySelector('thead').innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-    tbl.querySelector('tbody').innerHTML = v.slice(1) // skip header
-      .filter(r=>!r.every(c=>c===''||c===null))       // skip komplett leere Zeilen
-      .map((r,i)=>rowFn(r,bg[i+1]||['']))             // fallback, falls bg fehlt
+    tbl.querySelector('tbody').innerHTML = v.slice(1)
+      .filter(r=>!r.every(c=>c===''||c===null))
+      .map((r,i)=>rowFn(r,(bg[i+1]||[''])))
       .join('');
   }
   const rowLeader=(r,c)=>`<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
@@ -151,13 +158,29 @@
     });
   }
 
-  // --- Vorrunden-„fertig“-Heuristik auf Basis der gelieferten Leaderboard-Daten ---
-  // Bedingung: alle sichtbaren Leaderboard-Zeilen haben in Spalte 4 ("Punkte") einen Wert (nicht leer).
-  function vorrundeFertigFromLeader(leaderData){
-    const rows = leaderData.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
-    if(!rows.length) return false;
-    // Treat "0" als Wert (String oder Zahl) – leer ist nur: null/undefined/""
-    return rows.every(r => r[3] !== '' && r[3] != null);
+  // --- Exakter Check: Rennübersicht!E2:E193 muss voll sein ---
+  // robust via gviz: SELECT COUNT(E) WHERE E IS NOT NULL auf den Range E2:E193
+  async function isVorrundeCompleteByE(){
+    const need = CFG.eRangeEnd - CFG.eRangeStart + 1; // 192
+    const tq = `select count(E) where E is not null`;
+    const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq`
+      + `?gid=${CFG.gidRennuebersicht}`
+      + `&range=${encodeURIComponent('E'+CFG.eRangeStart+':E'+CFG.eRangeEnd)}`
+      + `&tq=${encodeURIComponent(tq)}&tqx=out:json`;
+    try{
+      const txt = await (await fetch(url,{cache:'no-store'})).text();
+      const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?$/);
+      if(!m) { console.warn('gviz response parse fail'); return false; }
+      const payload = JSON.parse(m[1]);
+      const val = payload?.table?.rows?.[0]?.c?.[0]?.v ?? 0;
+      const ok = Number(val) === need;
+      // Debug im Console-Log, um später schnell zu sehen, warum es (nicht) klappt
+      console.log(`[E2:E193] filled=${val}/${need} -> ${ok?'OK':'NOT OK'}`);
+      return ok;
+    }catch(e){
+      console.warn('Fehler beim gviz-Check E2:E193', e);
+      return false; // failsafe: nicht anzeigen
+    }
   }
 
   // KO-Tabs gemeinsam ein/ausblenden
@@ -175,17 +198,20 @@
   async function load(){
     spin(true);
     try{
-      const d = await (await fetch(CFG.api+'?t='+Date.now())).json();
+      // Tabellen (Apps Script) + E-Spalten-Check parallel
+      const [d, vorrundeOK] = await Promise.all([
+        fetch(CFG.api+'?t='+Date.now(), {cache:'no-store'}).then(r=>r.json()),
+        isVorrundeCompleteByE()
+      ]);
 
-      // Tabellen befüllen
+      // Tabellen befüllen (rein aus Apps Script)
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
       fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
 
-      // KO-Sichtbarkeit ausschließlich aus API-Daten ableiten
-      const fertig = vorrundeFertigFromLeader(d.leader);
-      setKoVisibility(fertig);
+      // KO-Sichtbarkeit NUR anhand des E-Spalten-Checks
+      setKoVisibility(vorrundeOK);
 
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
       ['leader','vf','hf','fin'].forEach(i=>{
@@ -194,7 +220,6 @@
       });
     }catch(e){
       console.error(e);
-      // bei Fehler lieber ausblenden
       setKoVisibility(false);
     }
     spin(false);
