@@ -98,6 +98,8 @@
       {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',               href:'https://nike.com'}
     ]
   };
+
+  // Sponsorenlaufband
   document.getElementById('sponsorTrack').innerHTML =
     CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
 
@@ -116,14 +118,81 @@
   const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
   const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
+  // Tab- und Sektionen-Referenzen
+  const btn = {
+    leader: document.querySelector('button[data-tab="leader"]'),
+    vf:     document.querySelector('button[data-tab="vf"]'),
+    hf:     document.querySelector('button[data-tab="hf"]'),
+    fin:    document.querySelector('button[data-tab="fin"]')
+  };
+  const sec = {
+    leader: document.getElementById('leader'),
+    vf:     document.getElementById('vf'),
+    hf:     document.getElementById('hf'),
+    fin:    document.getElementById('fin')
+  };
+
+  function showTab(id){
+    Object.keys(btn).forEach(k=>{
+      btn[k].classList.toggle('active',k===id && !btn[k].classList.contains('hidden'));
+      sec[k].classList.toggle('active',k===id);
+    });
+  }
+  function currentActiveTab(){
+    return document.querySelector('#tabs button.active')?.dataset.tab || 'leader';
+  }
+
+  // --- Fertig-Prüfungen ---
+  function VorrundeFertig(data){
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
+    return rows.length && rows.every(r=>r[3]!=='' && r[3]!=null);
+  }
+  function PhaseFertig(data){
+    // prüft: jede Zeile hat in Spalte 5 (Index 5) ein ✓ oder ✗
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
+    return rows.length && rows.every(r=>r[5]==='✓' || r[5]==='✗');
+  }
+  function FinaleFertig(data){
+    // prüft: jede Zeile hat eine Endplatzierung (Spalte 4, Index 4)
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
+    return rows.length && rows.every(r=>r[4]!=='' && r[4]!=null);
+  }
+
   async function load(){
     spin(true);
     try{
       const d=await (await fetch(CFG.api+'?t='+Date.now())).json();
+
+      // Tabellen füllen
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
       fill('tbl-vf',    d.vf,['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-hf',    d.hf,['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-fin',   d.fin,['Endplatzierung','Startnummer','Fahrer'],rowFin);
+
+      // Sichtbarkeit je Phase
+      const fertigLeader = VorrundeFertig(d.leader);
+      const fertigVF     = fertigLeader && PhaseFertig(d.vf);
+      const fertigHF     = fertigVF && PhaseFertig(d.hf);
+      const fertigFin    = fertigHF && FinaleFertig(d.fin);
+
+      // Tabs & Sektionen umschalten
+      btn.vf.classList.toggle('hidden', !fertigLeader);
+      sec.vf.classList.toggle('hidden', !fertigLeader);
+
+      btn.hf.classList.toggle('hidden', !fertigVF);
+      sec.hf.classList.toggle('hidden', !fertigVF);
+
+      btn.fin.classList.toggle('hidden', !fertigHF);
+      sec.fin.classList.toggle('hidden', !fertigHF);
+
+      // Falls gerade ein "verschwundener" Tab aktiv war → zurück
+      const active=currentActiveTab();
+      if((active==='vf'  && !fertigLeader)||
+        (active==='hf'  && !fertigVF)   ||
+        (active==='fin' && !fertigHF)){
+        showTab('leader');
+      }
+
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
       ['leader','vf','hf','fin'].forEach(i=>document.getElementById('upd-'+i).textContent='Aktualisiert: '+ts);
     }catch(e){console.error(e);}
@@ -131,10 +200,12 @@
   }
   load(); setInterval(load,CFG.refresh);
 
-  document.querySelectorAll('#tabs button').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b===btn));
-      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.tab));
+  // Tabs
+  document.querySelectorAll('#tabs button').forEach(b=>{
+    b.onclick=()=>{
+      if(b.classList.contains('hidden')) return;
+      document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));
     };
   });
 </script>
