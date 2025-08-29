@@ -10,34 +10,40 @@
             --green:#C6EFCE;--greenText:#006100;
             --red:#FFC7CE;  --redText:#9C0006;
             --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
-            --stickyTop:0px;
-            --spinner-img:url('./images/car2.gif');
-            --spinner-size:130px;
+            --stickyTop:0px;                           /* Kopfzeile klebt ganz oben */
+            --spinner-img:url('./images/car2.gif');    /* dein GIF */
+            --spinner-size:130px;                      /* Bildgröße */
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
 
-        /* Spinner */
-        #spinner{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.7);z-index:999}
+        /* ---------- Spinner ---------- */
+        #spinner{
+            position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
+            background:rgba(255,255,255,.7);z-index:999}
         #spinner.hide{display:none}
-        #spinner::after{content:"";width:var(--spinner-size);height:var(--spinner-size);background:var(--spinner-img) center/contain no-repeat}
+        #spinner::after{
+            content:"";width:var(--spinner-size);height:var(--spinner-size);
+            background:var(--spinner-img) center/contain no-repeat;
+        }
 
-        /* Kopf & Sponsor */
+        /* ---------- Kopf & Sponsor ---------- */
         #masthead{position:sticky;top:0;z-index:10;background:#183028}
         header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
         header img{height:80px;margin-right:8px;vertical-align:middle}
+
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{display:flex;gap:64px;animation:scroll 10s linear infinite;padding:4px 0}
         #sponsors img{height:80px;max-width:140px;vertical-align:middle}
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-        /* Tabs */
+        /* ---------- Tabs ---------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
         nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
         nav button.active{background:#183028;color:#fff;border-color:#183028}
         .hidden{display:none !important}
 
-        /* Tabellen */
+        /* ---------- Tabellen ---------- */
         .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
         .section.active{display:block}
         .tableWrap{overflow-x:auto}
@@ -71,6 +77,7 @@
 <!-- Tabs -->
 <nav id="tabs">
     <button data-tab="leader" class="active">Vorrunde</button>
+    <!-- KO-Tabs initial versteckt, um Flackern zu vermeiden -->
     <button data-tab="vf"  class="hidden">Viertelfinale</button>
     <button data-tab="hf"  class="hidden">Halbfinale</button>
     <button data-tab="fin" class="hidden">Finale</button>
@@ -96,6 +103,7 @@
 
 <script>
   const CFG={
+    // Ergebnisdaten kommen ausschließlich vom Apps Script:
     api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
     refresh:30000,
     sponsors:[
@@ -103,14 +111,14 @@
       {n:'Adidas',l:'https://www.citypng.com/public/uploads/preview/adidas-black-logo-701751694777212bstvn6c2g9.png',href:'https://adidas.de'},
       {n:'Nike',  l:'https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg',               href:'https://nike.com'}
     ],
-    // gviz-Check auf Rennübersicht!B2:E193
+    // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E193)
     sheetId:'1gerTSMPMCxL1VqUBMRoi77LoLSpQ5hPoOYMO1UmqnaM',
     gidRennuebersicht:'1394865267',
     rowStart:2,
     rowEnd:193
   };
 
-  // Sponsoren
+  // Sponsoren-Laufband
   document.getElementById('sponsorTrack').innerHTML =
     CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
 
@@ -119,20 +127,20 @@
 
   const spin=on=>document.getElementById('spinner').classList.toggle('hide',!on);
 
-  // Tabellen
+  // Tabellen befüllen
   function fill(id,data,head,rowFn){
     const {v,bg}=data, tbl=document.getElementById(id);
     tbl.querySelector('thead').innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-    tbl.querySelector('tbody').innerHTML = v.slice(1)
-      .filter(r=>!r.every(c=>c===''||c===null))
-      .map((r,i)=>rowFn(r,(bg[i+1]||[''])))
+    tbl.querySelector('tbody').innerHTML = v.slice(1) // skip header
+      .filter(r=>!r.every(c=>c===''||c===null))       // skip komplett leere Zeilen
+      .map((r,i)=>rowFn(r,(bg[i+1]||[''])))           // fallback, falls bg fehlt
       .join('');
   }
   const rowLeader=(r,c)=>`<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
   const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
   const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
 
-  // Tabs
+  // Tabs/Sektionen referenzieren
   const btn = {
     leader: document.querySelector('button[data-tab="leader"]'),
     vf:     document.querySelector('button[data-tab="vf"]'),
@@ -156,44 +164,39 @@
     });
   }
 
-  // === Vorrunden-Check (ignoriert leere Startplätze) ===
-  // Liest Rennübersicht!B2:E193 und prüft:
-  //   - Zeile ist "aktiv", wenn B oder C oder D belegt (Startplatz existiert)
-  //   - Für jede aktive Zeile muss E belegt sein
-  async function isVorrundeCompleteFlexible(){
-    const range = `B${CFG.rowStart}:E${CFG.rowEnd}`;
-    const tq = `select B,C,D,E`; // alles holen, im Client prüfen
+  // === Vorrunden-Check (flexibel): aktive Zeilen = D befüllt; für alle aktiven muss E befüllt sein ===
+  async function isVorrundeComplete(){
+    const range = `D${CFG.rowStart}:E${CFG.rowEnd}`;
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq`
       + `?gid=${CFG.gidRennuebersicht}`
       + `&range=${encodeURIComponent(range)}`
-      + `&tq=${encodeURIComponent(tq)}&tqx=out:json`;
+      + `&tq=${encodeURIComponent('select D,E')}&tqx=out:json`;
     try{
       const txt = await (await fetch(url,{cache:'no-store'})).text();
       const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?$/);
-      if(!m) return false;
+      if(!m) { console.warn('gviz response parse fail'); return false; }
       const payload = JSON.parse(m[1]);
       const rows = payload.table?.rows || [];
 
       let active = 0, withE = 0;
-      for(const r of rows){
-        // Spalten indices: 0=B,1=C,2=D,3=E
-        const c = r.c || [];
-        const hasB = c[0]?.v != null && String(c[0].v).trim() !== '';
-        const hasC = c[1]?.v != null && String(c[1].v).trim() !== '';
-        const hasD = c[2]?.v != null && String(c[2].v).trim() !== '';
-        const activeRow = hasB || hasC || hasD;
-        if(activeRow){
+      rows.forEach((r, idx) => {
+        const d = r.c?.[0]?.v;  // Fahrer (D)
+        const e = r.c?.[1]?.v;  // Punkte (E)
+        const hasD = d != null && String(d).trim() !== '';
+        if(hasD){
           active++;
-          const hasE = c[3]?.v != null && String(c[3].v).trim() !== '';
-          if(hasE) withE++;
+          const hasE = e != null && String(e).trim() !== '';
+          if(hasE){ withE++; }
+          else { console.log(`Vorrunde offen: D${CFG.rowStart+idx}="${d}" hat noch keine Punkte in E${CFG.rowStart+idx}`); }
         }
-      }
+      });
+
       const ok = active>0 && withE===active;
-      console.log(`[Vorrunde flexible] active=${active}, withE=${withE} -> ${ok?'OK':'NOT OK'}`);
+      console.log(`[Vorrunde] aktive=${active}, mit Punkten=${withE} -> ${ok?'OK':'NICHT OK'}`);
       return ok;
     }catch(e){
-      console.warn('Fehler beim flexiblen Vorrunden-Check', e);
-      return false; // failsafe
+      console.warn('Fehler beim gviz-Check D/E', e);
+      return false; // failsafe: Tabs ausgeblendet
     }
   }
 
@@ -212,19 +215,19 @@
   async function load(){
     spin(true);
     try{
-      // Daten (Apps Script) + flexibler Vorrunden-Check parallel
+      // Tabellen (Apps Script) + Vorrunden-Check parallel holen
       const [d, vorrundeOK] = await Promise.all([
         fetch(CFG.api+'?t='+Date.now(), {cache:'no-store'}).then(r=>r.json()),
-        isVorrundeCompleteFlexible()
+        isVorrundeComplete()
       ]);
 
-      // Tabellen befüllen
+      // Tabellen befüllen (rein aus Apps Script)
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
       fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
 
-      // KO-Sichtbarkeit
+      // KO-Sichtbarkeit ausschließlich über den Vorrunden-Check
       setKoVisibility(vorrundeOK);
 
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
