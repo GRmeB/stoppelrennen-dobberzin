@@ -142,20 +142,29 @@
     return document.querySelector('#tabs button.active')?.dataset.tab || 'leader';
   }
 
-  // --- Fertig-Prüfungen ---
+  // ersetzt die alte VorrundeFertig
   function VorrundeFertig(data){
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
-    return rows.length && rows.every(r=>r[3]!=='' && r[3]!=null);
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
+    if(!rows.length) return false;
+    // Punkte (Spalte Index 3) müssen überall > 0 sein
+    return rows.every(r => r[3] !== '' && r[3] != null && !isNaN(+r[3]) && +r[3] > 0);
   }
+
+  // optional strenger: Phase gilt erst als fertig, wenn jede Zeile ✓ oder ✗ hat
+  // UND es mindestens ein ✓ gibt (sonst frühzeitiges „alles ✗“ verhindert).
   function PhaseFertig(data){
-    // prüft: jede Zeile hat in Spalte 5 (Index 5) ein ✓ oder ✗
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
-    return rows.length && rows.every(r=>r[5]==='✓' || r[5]==='✗');
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
+    if(!rows.length) return false;
+    const allMarked = rows.every(r => r[5] === '✓' || r[5] === '✗');
+    const anyQ      = rows.some (r => r[5] === '✓');
+    return allMarked && anyQ;
   }
+
+  // Finale: jede Zeile hat eine Endplatzierung (Index 4) > 0
   function FinaleFertig(data){
-    // prüft: jede Zeile hat eine Endplatzierung (Spalte 4, Index 4)
-    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
-    return rows.length && rows.every(r=>r[4]!=='' && r[4]!=null);
+    const rows = data.v.slice(1).filter(r=>!r.every(c=>c===''||c==null));
+    if(!rows.length) return false;
+    return rows.every(r => r[4] !== '' && r[4] != null && !isNaN(+r[4]) && +r[4] > 0);
   }
 
   async function load(){
