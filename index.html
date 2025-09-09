@@ -169,22 +169,15 @@
 
   // Sponsoren-Laufband (nahtlos: Inhalt exakt doppelt + Animation bis -50 %)
   (function buildMarquee(){
-    const track = document.getElementById('sponsorTrack');
     const items = CFG.sponsors.map(s => `
-    <a class="logo" href="${s.href || '#'}" target="_blank" rel="noopener">
-      <img src="${s.l}" alt="${s.n}" loading="lazy" decoding="async">
-    </a>`).join('');
-    track.innerHTML = items + items;
+      <a class="logo" href="${s.href || '#'}" target="_blank" rel="noopener">
+        <img src="${s.l}" alt="${s.n}" loading="lazy" decoding="async">
+      </a>`).join('');
+    document.getElementById('sponsorTrack').innerHTML = items + items;
 
-    // gewünschte Geschwindigkeit in Pixel pro Sekunde:
-    const PX_PER_SEC = 160; // ↑ Zahl = schneller (z.B. 200)
-    // Distanz der Animation ist die halbe Track-Breite (wir animieren bis -50%)
-    // kurz warten, bis der Browser die Breite berechnet hat:
-    requestAnimationFrame(() => {
-      const distance = track.scrollWidth / 2;  // px
-      const duration = distance / PX_PER_SEC;  // sek
-      document.documentElement.style.setProperty('--marquee-speed', `${duration}s`);
-    });
+    // Geschwindigkeit dynamisch an Menge koppeln (≈ 3 s pro Sponsor, mind. 12 s)
+    const speedSec = Math.max(12, CFG.sponsors.length * 3);
+    document.documentElement.style.setProperty('--marquee-speed', `${speedSec}s`);
   })();
 
   const q=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
