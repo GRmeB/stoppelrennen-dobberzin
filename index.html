@@ -33,8 +33,19 @@
         header img{height:80px;margin-right:8px;vertical-align:middle}
 
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
-        #sponsors .track{display:flex;gap:64px;animation:scroll 10s linear infinite;padding:4px 0}
-        #sponsors img{height:80px;max-width:140px;vertical-align:middle}
+        #sponsors .track{
+            display:flex; gap:64px; align-items:center;
+            animation:scroll 10s linear infinite; padding:4px 0;
+        }
+        /* Jede Logo-Kachel fix 140×80, Bild proportional via object-fit */
+        #sponsors .logo{
+            width:140px; height:80px; flex:0 0 auto;
+            display:flex; align-items:center; justify-content:center;
+        }
+        #sponsors .logo img{
+            width:100%; height:100%; object-fit:contain; display:block;
+        }
+
         @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
         /* ---------- Tabs ---------- */
@@ -110,9 +121,9 @@
     sponsors:[
       {n:'MGQ', l:'./images/logos/MGQ_Logo.png', href:'https://mgq.solutions'},
       {n:'Agrar Dobberzin', l:'./images/logos/Agrar_Dobberzin.jpg', href:''},
-      {n:'Brune',   l:'./images/logos/ArbeitsUndBrandschutzserviceBrune.png', href:'https://mgq.solutions'},
-      {n:'W&G',   l:'./images/logos/W_G.jpg', href:''},
-      //{n:'',   l:'./images/logos/', href:''},
+      {n:'Brune', l:'./images/logos/ArbeitsUndBrandschutzserviceBrune.png', href:'https://mgq.solutions'},
+      {n:'W&G', l:'./images/logos/W_G.jpg', href:''},
+      // {n:'', l:'./images/logos/DEIN_LOGO.png', href:''},
     ],
     // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E193)
     sheetId:'1gerTSMPMCxL1VqUBMRoi77LoLSpQ5hPoOYMO1UmqnaM',
@@ -121,9 +132,12 @@
     rowEnd:193
   };
 
-  // Sponsoren-Laufband
+  // Sponsoren-Laufband (mit fester Logo-Box und object-fit:contain)
   document.getElementById('sponsorTrack').innerHTML =
-    CFG.sponsors.map(s=>`<a href="${s.href}" target="_blank"><img src="${s.l}" alt="${s.n}"></a>`).join('').repeat(2);
+    CFG.sponsors.map(s => `
+      <a class="logo" href="${s.href || '#'}" target="_blank" rel="noopener">
+        <img src="${s.l}" alt="${s.n}" loading="lazy" decoding="async">
+      </a>`).join('').repeat(2);
 
   const q=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
   const p=x=>{const n=+x;return n===1?'<span class="badge gold">1</span>':n===2?'<span class="badge silver">2</span>':n===3?'<span class="badge bronze">3</span>':n?`<span class="badge final">${n}</span>`:'';};
