@@ -13,6 +13,7 @@
             --stickyTop:0px;                           /* Kopfzeile klebt ganz oben */
             --spinner-img:url('./images/car2.gif');    /* dein GIF */
             --spinner-size:130px;                      /* Bildgröße */
+            --marquee-speed:20s;                       /* Standardgeschwindigkeit (wird per JS gesetzt) */
         }
         *{box-sizing:border-box;margin:0}
         body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
@@ -35,7 +36,10 @@
         #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
         #sponsors .track{
             display:flex; gap:64px; align-items:center;
-            animation:scroll 10s linear infinite; padding:4px 0;
+            width:max-content;                 /* Breite = Contentbreite */
+            animation:marquee var(--marquee-speed) linear infinite;
+            will-change:transform;
+            padding:4px 0;
         }
         /* Jede Logo-Kachel fix 140×80, Bild proportional via object-fit */
         #sponsors .logo{
@@ -46,7 +50,10 @@
             width:100%; height:100%; object-fit:contain; display:block;
         }
 
-        @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+        @keyframes marquee{
+            from { transform:translateX(0); }
+            to   { transform:translateX(-50%); }  /* nur bis zur Hälfte (weil doppelt gerendert) */
+        }
 
         /* ---------- Tabs ---------- */
         nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
@@ -70,6 +77,11 @@
         .badge.bronze{background:var(--bronze)}.badge.final{background:var(--final)}
 
         .updated{text-align:center;font-size:12px;color:#666;margin-top:6px}
+
+        /* Optional: Bewegungen für Nutzer reduzieren */
+        @media (prefers-reduced-motion: reduce){
+            #sponsors .track{ animation-duration: calc(2 * var(--marquee-speed)); }
+        }
     </style>
 </head>
 <body>
@@ -119,10 +131,10 @@
     api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
     refresh:120000,
     sponsors:[
-      {n:'MGQ', l:'./images/logos/MGQ_Logo.png', href:'https://mgq.solutions'},
-      {n:'Agrar Dobberzin', l:'./images/logos/Agrar_Dobberzin.jpg', href:''},
-      {n:'Brune', l:'./images/logos/ArbeitsUndBrandschutzserviceBrune.png', href:'https://mgq.solutions'},
-      {n:'W&G', l:'./images/logos/W_G.jpg', href:''},
+      {n:'MGQ',              l:'./images/logos/MGQ_Logo.png',                          href:'https://mgq.solutions'},
+      {n:'Agrar Dobberzin',  l:'./images/logos/Agrar_Dobberzin.jpg',                   href:''},
+      {n:'Brune',            l:'./images/logos/ArbeitsUndBrandschutzserviceBrune.png', href:'https://mgq.solutions'},
+      {n:'W&G',              l:'./images/logos/W_G.jpg',                                href:''},
       // {n:'', l:'./images/logos/DEIN_LOGO.png', href:''},
     ],
     // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E193)
@@ -132,12 +144,18 @@
     rowEnd:193
   };
 
-  // Sponsoren-Laufband (mit fester Logo-Box und object-fit:contain)
-  document.getElementById('sponsorTrack').innerHTML =
-    CFG.sponsors.map(s => `
+  // Sponsoren-Laufband (nahtlos: Inhalt exakt doppelt + Animation bis -50 %)
+  (function buildMarquee(){
+    const items = CFG.sponsors.map(s => `
       <a class="logo" href="${s.href || '#'}" target="_blank" rel="noopener">
         <img src="${s.l}" alt="${s.n}" loading="lazy" decoding="async">
-      </a>`).join('').repeat(2);
+      </a>`).join('');
+    document.getElementById('sponsorTrack').innerHTML = items + items;
+
+    // Geschwindigkeit dynamisch an Menge koppeln (≈ 3 s pro Sponsor, mind. 12 s)
+    const speedSec = Math.max(12, CFG.sponsors.length * 3);
+    document.documentElement.style.setProperty('--marquee-speed', `${speedSec}s`);
+  })();
 
   const q=v=>v==='✓'?'<span class="badge q">✓</span>':v==='✗'?'<span class="badge out">✗</span>':'';
   const p=x=>{const n=+x;return n===1?'<span class="badge gold">1</span>':n===2?'<span class="badge silver">2</span>':n===3?'<span class="badge bronze">3</span>':n?`<span class="badge final">${n}</span>`:'';};
