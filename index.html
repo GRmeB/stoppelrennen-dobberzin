@@ -78,6 +78,31 @@
 
         .updated{text-align:center;font-size:12px;color:#666;margin-top:6px}
 
+        /* ---------- Footer ---------- */
+        #site-footer{
+            margin-top:24px;
+            background:#fff;
+            border-top:1px solid #e5e5e5;
+        }
+        #site-footer .footer-inner{
+            max-width:1000px; margin:0 auto;
+            padding:12px 8px;
+            display:flex; flex-wrap:wrap;
+            gap:14px; align-items:center; justify-content:center;
+            color:#444; font-size:14px;
+        }
+        #site-footer .brand{opacity:.9}
+        #site-footer .footer-link{
+            display:inline-flex; align-items:center; gap:8px;
+            padding:6px 10px; border-radius:999px;
+            text-decoration:none; color:#183028;
+            background:#fafafa; border:1px solid #ddd;
+            transition:background .2s, border-color .2s, transform .05s;
+        }
+        #site-footer .footer-link:hover{ background:#f3f3f3; border-color:#ccc; }
+        #site-footer .footer-link:active{ transform:translateY(1px); }
+        #site-footer .icon{ width:16px; height:16px; display:block; }
+
         /* Optional: Bewegungen für Nutzer reduzieren */
         @media (prefers-reduced-motion: reduce){
             #sponsors .track{ animation-duration: calc(2 * var(--marquee-speed)); }
@@ -321,5 +346,27 @@
     };
   });
 </script>
+
+<footer id="site-footer">
+    <div class="footer-inner">
+        <span class="brand">Erstellt von <strong>MGQ Solutions</strong></span>
+
+        <a class="footer-link" href="https://mgq.solutions" target="_blank" rel="noopener" aria-label="Website von MGQ Solutions">
+            <!-- Globe-Icon -->
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm-1 2.1A8 8 0 0 0 4.1 11H7c.3-2.3 1.2-4.3 2-6.9ZM4.1 13A8 8 0 0 0 11 19.9V13H4.1ZM13 19.9A8 8 0 0 0 19.9 13H13v6.9ZM19.9 11A8 8 0 0 0 13 4.1V11h6.9Z" fill="currentColor"/>
+            </svg>
+            mgq.solutions
+        </a>
+
+        <a class="footer-link" href="https://www.instagram.com/mgq.solutions" target="_blank" rel="noopener" aria-label="Instagram-Profil von MGQ Solutions">
+            <!-- Instagram-Icon (vereinfacht) -->
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM18 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" fill="currentColor"/>
+            </svg>
+            Instagram
+        </a>
+    </div>
+</footer>
 </body>
 </html>
