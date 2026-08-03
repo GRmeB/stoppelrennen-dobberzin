@@ -1,154 +1,292 @@
 <!doctype html>
 <html lang="de">
 <head>
-    <meta charset="utf-8">
-    <title>Stoppelrennen Dobberzin 2026</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root{
-            --green:#C6EFCE;--greenText:#006100;
-            --red:#FFC7CE;  --redText:#9C0006;
-            --gold:#FFD966; --silver:#D9D9D9;--bronze:#F4B183;--final:#E2F0D9;
-            --stickyTop:0px;                           /* Kopfzeile klebt ganz oben */
-            --spinner-img:url('./images/car2.gif');    /* dein GIF */
-            --spinner-size:130px;                      /* Bildgröße */
-            --marquee-speed:20s;                       /* Standardgeschwindigkeit (wird per JS gesetzt) */
-        }
-        *{box-sizing:border-box;margin:0}
-        body{font:400 16px/1.45 Roboto,Arial,sans-serif;background:#f7f7f7;color:#111}
+<meta charset="utf-8">
+<title>Stoppelrennen Dobberzin 2026</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f231b">
+<meta name="description" content="Live-Ergebnisse Stoppelrennen Dobberzin 2026 – Vorrunde, Viertelfinale, Halbfinale, Finale.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand-900:#0f231b; --brand-800:#153a2b; --brand-700:#1d4d38;
+    --accent:#ffb703;    --accent-ink:#3d2900;
+    --surface:#ffffff;   --surface-alt:#f4f6f5; --surface-raised:#ffffff;
+    --ink:#111a15;        --ink-soft:#5c6b63;    --border:#e3e8e4;
+    --ok-bg:#d9f5e1;  --ok-fg:#0e6b34;
+    --out-bg:#ffe1e2; --out-fg:#9c1c22;
+    --gold-bg:#ffd97a;   --gold-fg:#5c3d00;
+    --silver-bg:#e1e5e8; --silver-fg:#3a4046;
+    --bronze-bg:#f3c091;  --bronze-fg:#5c2f00;
+    --final-bg:#e4f2e8;  --final-fg:#1f5138;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(15,35,27,.06), 0 8px 24px -12px rgba(15,35,27,.18);
+    --header-h:64px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --surface:#101915;   --surface-alt:#0b120f; --surface-raised:#152019;
+      --ink:#eef3ef;        --ink-soft:#9db1a5;    --border:#233028;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+      color-scheme:dark;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  *{margin:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font:400 16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--surface-alt); color:var(--ink);
+    min-height:100dvh; display:flex; flex-direction:column;
+  }
+  h1,h2,.brand-kicker,nav button,.badge,thead th{font-family:Oswald,"Arial Narrow",Impact,sans-serif}
+  a{color:inherit}
+  img{max-width:100%; display:block}
 
-        /* ---------- Spinner ---------- */
-        #spinner{
-            position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
-            background:rgba(255,255,255,.7);z-index:999}
-        #spinner.hide{display:none}
-        #spinner::after{
-            content:"";width:var(--spinner-size);height:var(--spinner-size);
-            background:var(--spinner-img) center/contain no-repeat;
-        }
+  /* ---------- Spinner ---------- */
+  #spinner{
+    position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--surface-alt) 82%, transparent);
+    backdrop-filter:blur(2px);
+    transition:opacity .18s ease;
+  }
+  #spinner.hide{opacity:0; pointer-events:none}
+  #spinner .ring{
+    width:52px; height:52px; border-radius:50%;
+    background:conic-gradient(var(--accent) 0 90deg, transparent 0 180deg, var(--accent) 0 270deg, transparent 0 360deg);
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 7px));
+            mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 7px));
+    animation:spin .9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){ #spinner .ring{animation-duration:2.4s} }
 
-        /* ---------- Kopf & Sponsor ---------- */
-        #masthead{position:sticky;top:0;z-index:10;background:#183028}
-        header{background:#183028;color:#fff;text-align:center;padding:8px 16px}
-        header img{height:80px;margin-right:8px;vertical-align:middle}
+  /* ---------- Header ---------- */
+  .site-header{background:linear-gradient(160deg,var(--brand-900),var(--brand-800) 70%); color:#fff}
+  .header-inner{
+    max-width:1100px; margin:0 auto; padding:14px 18px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:12px; flex:1 1 auto; min-width:0}
+  .brand-logo{height:52px; width:52px; border-radius:10px; object-fit:cover; flex:0 0 auto; background:#0002}
+  .brand-text{min-width:0}
+  .brand-kicker{
+    display:block; font-size:.7rem; font-weight:600; letter-spacing:.16em;
+    color:var(--accent); text-transform:uppercase;
+  }
+  .brand-text h1{
+    font-size:clamp(1.05rem,3.6vw,1.5rem); font-weight:700; letter-spacing:.01em;
+    line-height:1.15; overflow-wrap:anywhere;
+  }
+  .status-pill{
+    display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 10px;
+    background:#ffffff14; border:1px solid #ffffff26; border-radius:999px;
+    font-size:.8rem; color:#e7efe9; flex:0 0 auto; white-space:nowrap;
+  }
+  .status-pill .dot{
+    width:8px; height:8px; border-radius:50%; background:#6ee7a3; flex:0 0 auto;
+    box-shadow:0 0 0 0 rgba(110,231,163,.6); animation:pulse 2s ease-out infinite;
+  }
+  .status-pill.offline .dot{background:#ff8b8b; animation:none}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(110,231,163,.55)}
+    70%{box-shadow:0 0 0 8px rgba(110,231,163,0)}
+    100%{box-shadow:0 0 0 0 rgba(110,231,163,0)}
+  }
 
-        #sponsors{overflow:hidden;background:#fff;border-block:2px solid #eee}
-        #sponsors .track{
-            display:flex; gap:64px; align-items:center;
-            width:max-content;                 /* Breite = Contentbreite */
-            animation:marquee var(--marquee-speed) linear infinite;
-            will-change:transform;
-            padding:4px 0;
-        }
-        /* Jede Logo-Kachel fix 140×80, Bild proportional via object-fit */
-        #sponsors .logo{
-            width:140px; height:80px; flex:0 0 auto;
-            display:flex; align-items:center; justify-content:center;
-        }
-        #sponsors .logo img{
-            width:100%; height:100%; object-fit:contain; display:block;
-        }
+  .flag-strip{
+    height:6px;
+    background-image:repeating-linear-gradient(45deg,#fff 0 10px,#0000 0 20px);
+    background-color:var(--accent);
+    opacity:.9;
+  }
 
-        @keyframes marquee{
-            from { transform:translateX(0); }
-            to   { transform:translateX(-50%); }  /* nur bis zur Hälfte (weil doppelt gerendert) */
-        }
+  /* ---------- Sponsoren ---------- */
+  #sponsors{
+    overflow:hidden; background:var(--surface); border-bottom:1px solid var(--border);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+  }
+  #sponsors .track{
+    display:flex; gap:48px; align-items:center; width:max-content;
+    animation:marquee var(--marquee-speed,20s) linear infinite; will-change:transform; padding:12px 24px;
+  }
+  #sponsors .logo{
+    width:120px; height:64px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    opacity:.85; transition:opacity .15s ease, transform .15s ease;
+  }
+  #sponsors .logo:hover{opacity:1; transform:translateY(-1px)}
+  #sponsors .logo img{width:100%; height:100%; object-fit:contain; display:block}
+  @keyframes marquee{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  @media (prefers-reduced-motion:reduce){ #sponsors .track{animation-duration:calc(3 * var(--marquee-speed,20s))} }
 
-        /* ---------- Tabs ---------- */
-        nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto}
-        nav button{padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;font-weight:700;cursor:pointer}
-        nav button.active{background:#183028;color:#fff;border-color:#183028}
-        .hidden{display:none !important}
+  /* ---------- Tabs ---------- */
+  .tabbar-wrap{
+    position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb, var(--surface-alt) 88%, transparent);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--border);
+  }
+  nav#tabs{
+    max-width:1100px; margin:0 auto; padding:10px 14px;
+    display:flex; gap:6px; justify-content:center; flex-wrap:wrap;
+  }
+  nav#tabs button{
+    appearance:none; border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    padding:9px 18px; border-radius:999px; font-size:.92rem; font-weight:600; letter-spacing:.01em;
+    cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease, transform .05s ease;
+  }
+  nav#tabs button:hover{border-color:var(--brand-700)}
+  nav#tabs button:active{transform:translateY(1px)}
+  nav#tabs button.active{background:var(--brand-900); border-color:var(--brand-900); color:#fff}
+  nav#tabs button.hidden{display:none !important}
+  nav#tabs button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-        /* ---------- Tabellen ---------- */
-        .section{display:none;max-width:1000px;margin:0 auto;padding:0 8px 48px}
-        .section.active{display:block}
-        .tableWrap{overflow-x:auto}
-        table{width:100%;border-collapse:collapse;margin-top:8px;font-size:clamp(14px,2.5vw,16px)}
-        thead th{background:#e0e0e0;position:sticky;top:var(--stickyTop);text-align:left}
-        td,th{padding:4px 8px;border-bottom:1px solid #ddd;white-space:nowrap;text-overflow:ellipsis}
-        tbody tr:nth-child(even){background:#fafafa}
+  /* ---------- Content ---------- */
+  main{flex:1; width:100%}
+  .section{display:none; max-width:1100px; margin:0 auto; padding:18px 14px 56px}
+  .section.active{display:block}
 
-        .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:700;font-size:.8em}
-        .badge.q{background:var(--green);color:var(--greenText)}
-        .badge.out{background:var(--red);color:var(--redText)}
-        .badge.gold{background:var(--gold)}.badge.silver{background:var(--silver)}
-        .badge.bronze{background:var(--bronze)}.badge.final{background:var(--final)}
+  .panel{
+    background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .panel-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    padding:16px 18px 4px;
+  }
+  .panel-head h2{font-size:1.15rem; font-weight:600; letter-spacing:.02em; color:var(--ink)}
+  .updated{font-size:.75rem; color:var(--ink-soft); white-space:nowrap}
 
-        .updated{text-align:center;font-size:12px;color:#666;margin-top:6px}
+  .tableWrap{overflow-x:auto; padding:6px 6px 14px}
+  table.results{width:100%; border-collapse:collapse; font-size:.95rem}
+  table.results thead th{
+    text-align:left; font-weight:600; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-soft); padding:10px 12px; border-bottom:1px solid var(--border);
+  }
+  table.results tbody td{
+    padding:10px 12px; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  table.results tbody tr{animation:rowIn .25s ease both}
+  table.results tbody tr:last-child td{border-bottom:none}
+  table.results tbody tr:hover td{background:color-mix(in srgb, var(--brand-700) 6%, transparent)}
+  @keyframes rowIn{ from{opacity:0; transform:translateY(2px)} to{opacity:1; transform:none} }
+  @media (prefers-reduced-motion:reduce){ table.results tbody tr{animation:none} }
 
-        /* ---------- Footer ---------- */
-        #site-footer{
-            margin-top:24px;
-            background:#fff;
-            border-top:1px solid #e5e5e5;
-        }
-        #site-footer .footer-inner{
-            max-width:1000px; margin:0 auto;
-            padding:12px 8px;
-            display:flex; flex-wrap:wrap;
-            gap:14px; align-items:center; justify-content:center;
-            color:#444; font-size:14px;
-        }
-        #site-footer .brand{opacity:.9}
-        #site-footer .footer-link{
-            display:inline-flex; align-items:center; gap:8px;
-            padding:6px 10px; border-radius:999px;
-            text-decoration:none; color:#183028;
-            background:#fafafa; border:1px solid #ddd;
-            transition:background .2s, border-color .2s, transform .05s;
-        }
-        #site-footer .footer-link:hover{ background:#f3f3f3; border-color:#ccc; }
-        #site-footer .footer-link:active{ transform:translateY(1px); }
-        #site-footer .icon{ width:16px; height:16px; display:block; }
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center; min-width:1.9em;
+    padding:.22em .6em; border-radius:999px; font-weight:700; font-size:.82em; letter-spacing:.02em;
+  }
+  .badge.q{background:var(--ok-bg); color:var(--ok-fg)}
+  .badge.out{background:var(--out-bg); color:var(--out-fg)}
+  .badge.gold{background:var(--gold-bg); color:var(--gold-fg)}
+  .badge.silver{background:var(--silver-bg); color:var(--silver-fg)}
+  .badge.bronze{background:var(--bronze-bg); color:var(--bronze-fg)}
+  .badge.final{background:var(--final-bg); color:var(--final-fg)}
 
-        /* Optional: Bewegungen für Nutzer reduzieren */
-        @media (prefers-reduced-motion: reduce){
-            #sponsors .track{ animation-duration: calc(2 * var(--marquee-speed)); }
-        }
-    </style>
+  .empty-hint{padding:28px 18px; text-align:center; color:var(--ink-soft); font-size:.92rem}
+
+  /* Kompakte, einzeilige Tabelle auf schmalen Screens (ein Fahrer = eine Zeile) */
+  @media (max-width:640px){
+    .panel-head{padding:12px 14px 2px}
+    .panel-head h2{font-size:1rem}
+    .updated{font-size:.68rem}
+    .tableWrap{padding:2px 2px 8px}
+    table.results{font-size:.83rem; table-layout:fixed}
+    table.results thead th{padding:6px 8px; font-size:.6rem; letter-spacing:.05em}
+    table.results tbody td{padding:8px 8px}
+    /* Fahrer (immer 3. Spalte) nimmt den Restplatz, lange Namen werden mit … abgeschnitten */
+    table.results th:nth-child(1),table.results td:nth-child(1){width:15%}
+    table.results th:nth-child(2),table.results td:nth-child(2){width:23%}
+    table.results th:nth-child(3),table.results td:nth-child(3){
+      width:auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    table.results th:nth-child(4),table.results td:nth-child(4){width:20%; text-align:right}
+    table.results tbody tr{animation:none}
+  }
+  @media (max-width:380px){
+    table.results{font-size:.78rem}
+    table.results tbody td{padding:7px 6px}
+  }
+
+  /* ---------- Footer ---------- */
+  #site-footer{margin-top:auto; background:var(--surface); border-top:1px solid var(--border)}
+  #site-footer .footer-inner{
+    max-width:1100px; margin:0 auto; padding:16px 14px;
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center;
+    color:var(--ink-soft); font-size:.85rem;
+  }
+  #site-footer .brand-line strong{color:var(--ink)}
+  #site-footer .footer-link{
+    display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
+    text-decoration:none; color:var(--ink); background:var(--surface-alt); border:1px solid var(--border);
+    transition:background .15s ease, border-color .15s ease, transform .05s ease;
+  }
+  #site-footer .footer-link:hover{border-color:var(--brand-700)}
+  #site-footer .footer-link:active{transform:translateY(1px)}
+  #site-footer .icon{width:15px; height:15px; display:block}
+</style>
 </head>
 <body>
-<!-- Spinner -->
-<div id="spinner" class="hide"></div>
 
-<!-- Kopfbereich -->
-<div id="masthead">
-    <header>
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
-        Stoppelrennen Dobberzin 2026
-        LIVETICKER
-    </header>
-    <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
-</div>
+<div id="spinner" class="hide" aria-hidden="true"><div class="ring"></div></div>
 
-<!-- Tabs -->
-<nav id="tabs">
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <img class="brand-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
+      <div class="brand-text">
+        <span class="brand-kicker">Liveticker</span>
+        <h1>Stoppelrennen Dobberzin 2026</h1>
+      </div>
+    </div>
+    <div class="status-pill" id="statusPill">
+      <span class="dot"></span>
+      <span id="statusText">Lädt …</span>
+    </div>
+  </div>
+</header>
+<div class="flag-strip"></div>
+
+<div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
+
+<div class="tabbar-wrap">
+  <nav id="tabs">
     <button data-tab="leader" class="active">Vorrunde</button>
-    <!-- KO-Tabs initial versteckt, um Flackern zu vermeiden -->
     <button data-tab="vf"  class="hidden">Viertelfinale</button>
     <button data-tab="hf"  class="hidden">Halbfinale</button>
     <button data-tab="fin" class="hidden">Finale</button>
-</nav>
+  </nav>
+</div>
 
-<!-- Tabellen -->
-<div id="leader" class="section active">
-    <div class="tableWrap"><table id="tbl-leader"><thead></thead><tbody></tbody></table></div>
-    <div class="updated" id="upd-leader"></div>
-</div>
-<div id="vf" class="section hidden">
-    <div class="tableWrap"><table id="tbl-vf"><thead></thead><tbody></tbody></table></div>
-    <div class="updated" id="upd-vf"></div>
-</div>
-<div id="hf" class="section hidden">
-    <div class="tableWrap"><table id="tbl-hf"><thead></thead><tbody></tbody></table></div>
-    <div class="updated" id="upd-hf"></div>
-</div>
-<div id="fin" class="section hidden">
-    <div class="tableWrap"><table id="tbl-fin"><thead></thead><tbody></tbody></table></div>
-    <div class="updated" id="upd-fin"></div>
-</div>
+<main>
+  <div id="leader" class="section active">
+    <div class="panel">
+      <div class="panel-head"><h2>Vorrunde</h2><span class="updated" id="upd-leader"></span></div>
+      <div class="tableWrap"><table id="tbl-leader" class="results"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <div id="vf" class="section hidden">
+    <div class="panel">
+      <div class="panel-head"><h2>Viertelfinale</h2><span class="updated" id="upd-vf"></span></div>
+      <div class="tableWrap"><table id="tbl-vf" class="results"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <div id="hf" class="section hidden">
+    <div class="panel">
+      <div class="panel-head"><h2>Halbfinale</h2><span class="updated" id="upd-hf"></span></div>
+      <div class="tableWrap"><table id="tbl-hf" class="results"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <div id="fin" class="section hidden">
+    <div class="panel">
+      <div class="panel-head"><h2>Finale</h2><span class="updated" id="upd-fin"></span></div>
+      <div class="tableWrap"><table id="tbl-fin" class="results"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+</main>
 
 <script>
   const CFG={
@@ -205,13 +343,10 @@
     </a>`).join('');
     track.innerHTML = items + items;
 
-    // gewünschte Geschwindigkeit in Pixel pro Sekunde:
-    const PX_PER_SEC = 160; // ↑ Zahl = schneller (z.B. 200)
-    // Distanz der Animation ist die halbe Track-Breite (wir animieren bis -50%)
-    // kurz warten, bis der Browser die Breite berechnet hat:
+    const PX_PER_SEC = 160;
     requestAnimationFrame(() => {
-      const distance = track.scrollWidth / 2;  // px
-      const duration = distance / PX_PER_SEC;  // sek
+      const distance = track.scrollWidth / 2;
+      const duration = distance / PX_PER_SEC;
       document.documentElement.style.setProperty('--marquee-speed', `${duration}s`);
     });
   })();
@@ -225,14 +360,29 @@
   function fill(id,data,head,rowFn){
     const {v,bg}=data, tbl=document.getElementById(id);
     tbl.querySelector('thead').innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-    tbl.querySelector('tbody').innerHTML = v.slice(1) // skip header
-      .filter(r=>!r.every(c=>c===''||c===null))       // skip komplett leere Zeilen
-      .map((r,i)=>rowFn(r,(bg[i+1]||[''])))           // fallback, falls bg fehlt
-      .join('');
+    const rows = v.slice(1).filter(r=>!r.every(c=>c===''||c===null));
+    const tbody = tbl.querySelector('tbody');
+    tbody.innerHTML = rows.length
+      ? rows.map((r,i)=>rowFn(r,(bg[i+1]||['']))).join('')
+      : `<tr><td colspan="${head.length}"><div class="empty-hint">Noch keine Ergebnisse</div></td></tr>`;
   }
-  const rowLeader=(r,c)=>`<tr style="background:${c[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
-  const rowPhase =(r,c)=>`<tr style="background:${c[0]}"><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${q(r[5])}</td></tr>`;
-  const rowFin   =(r,c)=>`<tr style="background:${c[0]}"><td>${p(r[4])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+  const rowLeader=(r,c)=>`<tr style="background:${c[0]}">
+    <td data-label="Platz">${r[0]}</td>
+    <td data-label="Startnummer">${r[1]}</td>
+    <td data-label="Fahrer">${r[2]}</td>
+    <td data-label="Punkte">${r[3]}</td>
+  </tr>`;
+  const rowPhase=(r,c)=>`<tr style="background:${c[0]}">
+    <td data-label="Rennen">${r[1]}</td>
+    <td data-label="Startnummer">${r[2]}</td>
+    <td data-label="Fahrer">${r[3]}</td>
+    <td data-label="Qualifiziert">${q(r[5])}</td>
+  </tr>`;
+  const rowFin=(r,c)=>`<tr style="background:${c[0]}">
+    <td data-label="Platz">${p(r[4])}</td>
+    <td data-label="Startnummer">${r[2]}</td>
+    <td data-label="Fahrer">${r[3]}</td>
+  </tr>`;
 
   // Tabs/Sektionen referenzieren
   const btn = {
@@ -289,7 +439,7 @@
       console.log(`[Vorrunde] aktive=${active}, mit Punkten=${withE} -> ${ok?'OK':'NICHT OK'}`);
       return ok;
     }catch(e){
-      console.warn('Fehler beim gviz-Check D/E', e);
+      console.warn('Fehler beim gviz-Check E/F', e);
       return false; // failsafe: Tabs ausgeblendet
     }
   }
@@ -306,22 +456,26 @@
     }
   }
 
+  function setStatus(text, offline){
+    const pill=document.getElementById('statusPill');
+    const txt=document.getElementById('statusText');
+    if(txt) txt.textContent=text;
+    if(pill) pill.classList.toggle('offline', !!offline);
+  }
+
   async function load(){
     spin(true);
     try{
-      // Tabellen (Apps Script) + Vorrunden-Check parallel holen
       const [d, vorrundeOK] = await Promise.all([
         fetch(CFG.api+'?t='+Date.now(), {cache:'no-store'}).then(r=>r.json()),
         isVorrundeComplete()
       ]);
 
-      // Tabellen befüllen (rein aus Apps Script)
       fill('tbl-leader',d.leader,['Platz','Startnummer','Fahrer','Punkte'],rowLeader);
       fill('tbl-vf',    d.vf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-hf',    d.hf,    ['Rennen','Startnummer','Fahrer','Qualifiziert'],rowPhase);
       fill('tbl-fin',   d.fin,   ['Endplatzierung','Startnummer','Fahrer'],rowFin);
 
-      // KO-Sichtbarkeit ausschließlich über den Vorrunden-Check
       setKoVisibility(vorrundeOK);
 
       const ts=new Date().toLocaleTimeString('de-DE',{hour12:false});
@@ -329,9 +483,11 @@
         const el=document.getElementById('upd-'+i);
         if(el) el.textContent='Aktualisiert: '+ts;
       });
+      setStatus('Live · '+ts, false);
     }catch(e){
       console.error(e);
       setKoVisibility(false);
+      setStatus('Verbindung unterbrochen', true);
     }
     spin(false);
   }
@@ -339,7 +495,6 @@
   load();
   setInterval(load, CFG.refresh);
 
-  // Tabs: versteckte ignorieren
   document.querySelectorAll('#tabs button').forEach(b=>{
     b.onclick=()=>{
       if(b.classList.contains('hidden')) return;
@@ -350,25 +505,21 @@
 </script>
 
 <footer id="site-footer">
-    <div class="footer-inner">
-        <span class="brand">powered by <strong>MGQ Solutions</strong></span>
-
-        <a class="footer-link" href="https://mgq.solutions" target="_blank" rel="noopener" aria-label="Website von MGQ Solutions">
-            <!-- Globe-Icon -->
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm-1 2.1A8 8 0 0 0 4.1 11H7c.3-2.3 1.2-4.3 2-6.9ZM4.1 13A8 8 0 0 0 11 19.9V13H4.1ZM13 19.9A8 8 0 0 0 19.9 13H13v6.9ZM19.9 11A8 8 0 0 0 13 4.1V11h6.9Z" fill="currentColor"/>
-            </svg>
-            mgq.solutions
-        </a>
-
-        <a class="footer-link" href="https://www.instagram.com/mgq.solutions" target="_blank" rel="noopener" aria-label="Instagram-Profil von MGQ Solutions">
-            <!-- Instagram-Icon (vereinfacht) -->
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM18 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" fill="currentColor"/>
-            </svg>
-            Instagram
-        </a>
-    </div>
+  <div class="footer-inner">
+    <span class="brand-line">powered by <strong>MGQ Solutions</strong></span>
+    <a class="footer-link" href="https://mgq.solutions" target="_blank" rel="noopener" aria-label="Website von MGQ Solutions">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm-1 2.1A8 8 0 0 0 4.1 11H7c.3-2.3 1.2-4.3 2-6.9ZM4.1 13A8 8 0 0 0 11 19.9V13H4.1ZM13 19.9A8 8 0 0 0 19.9 13H13v6.9ZM19.9 11A8 8 0 0 0 13 4.1V11h6.9Z" fill="currentColor"/>
+      </svg>
+      mgq.solutions
+    </a>
+    <a class="footer-link" href="https://www.instagram.com/mgq.solutions" target="_blank" rel="noopener" aria-label="Instagram-Profil von MGQ Solutions">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM18 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" fill="currentColor"/>
+      </svg>
+      Instagram
+    </a>
+  </div>
 </footer>
 </body>
 </html>
