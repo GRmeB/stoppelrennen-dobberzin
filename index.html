@@ -189,8 +189,8 @@
       {n:'Wrensch', l:'./images/logos/Wrensch.jpg', href:'https://containershop-wrensch.de'},
       //{n:'', l:'./images/logos/', href:''},
     ],
-    // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E241)
-    sheetId:'1gfSBRr4FHtXlhBDo_12yHVyYbDCSy_pq-Bb53GrTvjk',
+    // Nur für den Sichtbarkeits-Check (Rennübersicht!E2:F241)
+    sheetId:'1lC4-P6TuWV7p1v0a9pgjlhJR6OoLD8zU_XZj5XvHiKA',
     sheetNameRennuebersicht:'Rennübersicht',
     rowStart:2,
     rowEnd:241
@@ -258,13 +258,13 @@
     });
   }
 
-  // === Vorrunden-Check (flexibel): aktive Zeilen = D befüllt; für alle aktiven muss E befüllt sein ===
+  // === Vorrunden-Check (flexibel): aktive Zeilen = E (Fahrer) befüllt; für alle aktiven muss F (Platz) befüllt sein ===
   async function isVorrundeComplete(){
-    const range = `D${CFG.rowStart}:E${CFG.rowEnd}`;
+    const range = `E${CFG.rowStart}:F${CFG.rowEnd}`;
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq`
       + `?sheet=${encodeURIComponent(CFG.sheetNameRennuebersicht)}`
       + `&range=${encodeURIComponent(range)}`
-      + `&tq=${encodeURIComponent('select D,E')}&tqx=out:json`;
+      + `&tq=${encodeURIComponent('select E,F')}&tqx=out:json`;
     try{
       const txt = await (await fetch(url,{cache:'no-store'})).text();
       const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?$/);
@@ -274,14 +274,14 @@
 
       let active = 0, withE = 0;
       rows.forEach((r, idx) => {
-        const d = r.c?.[0]?.v;  // Fahrer (D)
-        const e = r.c?.[1]?.v;  // Punkte (E)
+        const d = r.c?.[0]?.v;  // Fahrer (E)
+        const e = r.c?.[1]?.v;  // Platz (F)
         const hasD = d != null && String(d).trim() !== '';
         if(hasD){
           active++;
           const hasE = e != null && String(e).trim() !== '';
           if(hasE){ withE++; }
-          else { console.log(`Vorrunde offen: D${CFG.rowStart+idx}="${d}" hat noch keine Punkte in E${CFG.rowStart+idx}`); }
+          else { console.log(`Vorrunde offen: E${CFG.rowStart+idx}="${d}" hat noch keine Platzierung in F${CFG.rowStart+idx}`); }
         }
       });
 
