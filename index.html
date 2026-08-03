@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title>Stoppelrennen Dobberzin 2025</title>
+    <title>Stoppelrennen Dobberzin 2026</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -117,7 +117,7 @@
 <div id="masthead">
     <header>
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh2xaOaoQRipR8bA5GghETop505AnzMnHSQQ&s" alt="">
-        Stoppelrennen Dobberzin 2025
+        Stoppelrennen Dobberzin 2026
         LIVETICKER
     </header>
     <div id="sponsors"><div class="track" id="sponsorTrack"></div></div>
@@ -153,7 +153,7 @@
 <script>
   const CFG={
     // Ergebnisdaten kommen ausschließlich vom Apps Script:
-    api:'https://script.google.com/macros/s/AKfycbybETY44dfDCMMgN_c96hr3imGkGaB9b0w72_cLkIfNRWAtNsjVPPQfgxfPvORHzDi4bw/exec',
+    api:'https://script.google.com/macros/s/AKfycbxxcj7KWdHUNHvV_pCgcXbO5gTbIUwPTY9M0EsKbo8LekZV3CuoA_za1mL95CQg3XbN/exec',
     refresh:120000,
     sponsors:[
       {n:'Agrar Dobberzin', l:'./images/logos/Agrar_Dobberzin.jpg', href:''},
@@ -189,11 +189,11 @@
       {n:'Wrensch', l:'./images/logos/Wrensch.jpg', href:'https://containershop-wrensch.de'},
       //{n:'', l:'./images/logos/', href:''},
     ],
-    // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E193)
-    sheetId:'1gerTSMPMCxL1VqUBMRoi77LoLSpQ5hPoOYMO1UmqnaM',
-    gidRennuebersicht:'1394865267',
+    // Nur für den Sichtbarkeits-Check (Rennübersicht!D2:E241)
+    sheetId:'1gfSBRr4FHtXlhBDo_12yHVyYbDCSy_pq-Bb53GrTvjk',
+    sheetNameRennuebersicht:'Rennübersicht',
     rowStart:2,
-    rowEnd:193
+    rowEnd:241
   };
 
   // Sponsoren-Laufband (nahtlos: Inhalt exakt doppelt + Animation bis -50 %)
@@ -262,7 +262,7 @@
   async function isVorrundeComplete(){
     const range = `D${CFG.rowStart}:E${CFG.rowEnd}`;
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq`
-      + `?gid=${CFG.gidRennuebersicht}`
+      + `?sheet=${encodeURIComponent(CFG.sheetNameRennuebersicht)}`
       + `&range=${encodeURIComponent(range)}`
       + `&tq=${encodeURIComponent('select D,E')}&tqx=out:json`;
     try{
